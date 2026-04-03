@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCX Gold Cost Calculator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne+Mono&family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#080807;--bg2:#111110;--bg3:#1c1c19;--bg4:#252520;
+    --gold:#f0b830;--gold2:#ffd055;--gold3:#ffe899;--gold-dim:#8a6820;
+    --red:#ff5252;--red2:#ff8a80;--green:#69f0ae;--green2:#b9f6ca;
+    --amber:#ffab40;--blue:#82b1ff;--cyan:#84ffff;
+    --text:#e8e2d5;--text2:#c0b8a8;--muted:#7a7260;
+    --border:#2c2c26;--border2:#3e3e35;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-size:14px;line-height:1.6;min-height:100vh}
+  body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:9999}
+
+  /* Header */
+  header{border-bottom:1px solid var(--border2);background:var(--bg2);padding:0 28px;display:flex;align-items:stretch;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .hb{display:flex;align-items:center;gap:14px;padding:13px 0}
+  .bm{width:34px;height:34px;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Syne Mono',monospace;font-size:13px;color:var(--gold);font-weight:700;position:relative}
+  .bm::before{content:'';position:absolute;inset:3px;background:var(--gold);opacity:.1}
+  .bt{font-size:12px;font-weight:800;color:var(--gold2);letter-spacing:.16em;text-transform:uppercase}
+  .bs{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.06em}
+  .hm{display:flex;align-items:center;gap:14px}
+  .hb2{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border:1px solid var(--border2);border-radius:2px}
+  .ld{width:6px;height:6px;background:var(--green);border-radius:50%;display:inline-block;margin-right:6px;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  /* Layout */
+  .page{max-width:1200px;margin:0 auto;padding:26px 22px 80px}
+
+  /* Hero */
+  .hero{margin-bottom:28px;display:grid;grid-template-columns:1fr auto;align-items:end;gap:20px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+  .eyebrow{font-family:'DM Mono',monospace;font-size:10px;color:var(--gold-dim);letter-spacing:.2em;text-transform:uppercase;margin-bottom:6px}
+  .htitle{font-size:34px;font-weight:800;line-height:1.05;color:var(--gold2);letter-spacing:-.02em}
+  .htitle span{color:var(--gold3);display:block}
+  .hdesc{font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);margin-top:10px;max-width:480px;line-height:1.8}
+  .hv{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-align:right;line-height:2.1}
+  .hv strong{color:var(--gold2)}
+
+  /* Section labels */
+  .sl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+  .sl::after{content:'';flex:1;height:1px;background:var(--border2)}
+  .sl-plain{margin-bottom:0;flex:1}
+
+  /* Collapsible */
+  .cw{margin-bottom:20px}
+  .ch{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;padding-bottom:10px}
+  .ch:hover .sl{color:var(--gold2)}
+  .cbtn{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);background:var(--bg3);border:1px solid var(--border2);padding:3px 10px;border-radius:2px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase;transition:all .2s;margin-left:10px;white-space:nowrap}
+  .cbtn:hover{color:var(--gold);border-color:var(--gold-dim)}
+  .cbody{overflow:hidden}
+  .cbody.collapsed{display:none}
+
+  /* Input grid */
+  .ig{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px}
+  .ib{background:var(--bg2);border:1px solid var(--border2);padding:13px 15px;position:relative;transition:border-color .2s}
+  .ib:focus-within{border-color:var(--gold-dim)}
+  .ib::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--gold);opacity:0;transition:opacity .2s}
+  .ib:focus-within::before{opacity:1}
+  .il{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;justify-content:space-between}
+  .iu{font-size:9px;color:var(--gold-dim)}
+  .if{background:transparent;border:none;outline:none;font-family:'Syne Mono',monospace;font-size:19px;font-weight:700;color:var(--gold2);caret-color:var(--gold);width:100%;padding:0}
+  .if::placeholder{color:var(--border2)}
+  select.if{font-size:12px;cursor:pointer;-webkit-appearance:none}
+  .sw{margin-top:9px}
+  input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:var(--border2);border-radius:2px;outline:none;cursor:pointer}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--gold);border:2px solid var(--bg);cursor:pointer;transition:transform .15s}
+  input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.35)}
+  input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:var(--gold);border:2px solid var(--bg);cursor:pointer}
+  .sr{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);margin-top:3px}
+  .ih{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px}
+
+  /* Contract strip */
+  .cs{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border2);border:1px solid var(--border2)}
+  .cc{background:var(--bg2);padding:13px 15px}
+  .cc.hl{background:var(--bg3)}
+  .cl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .cv{font-family:'Syne Mono',monospace;font-size:17px;font-weight:700;color:var(--gold2)}
+  .cv.xl{font-size:22px}
+  .csb{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:2px}
+
+  /* Cost table */
+  .ctbl{width:100%;border-collapse:collapse;font-family:'DM Mono',monospace}
+  .ctbl th{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border2);font-weight:500}
+  .ctbl th:last-child{text-align:right}
+  .ctbl td{padding:9px 12px;font-size:12px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:middle}
+  .ctbl td:last-child{text-align:right;font-weight:700;color:var(--amber);font-family:'Syne Mono',monospace;font-size:14px}
+  .ctbl tr:hover td{background:rgba(255,255,255,.02)}
+  .ctbl .tr td{border-top:1px solid var(--border2);border-bottom:none;padding-top:11px}
+  .ctbl .tr td:first-child{color:var(--gold2);font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+  .ctbl .tr td:last-child{color:var(--red);font-size:17px}
+  .cb{display:inline-block;font-size:8px;padding:2px 6px;border-radius:2px;margin-left:7px;letter-spacing:.06em;text-transform:uppercase;vertical-align:middle}
+  .bsell{background:rgba(255,82,82,.12);color:var(--red);border:1px solid rgba(255,82,82,.25)}
+  .bboth{background:rgba(130,177,255,.1);color:var(--blue);border:1px solid rgba(130,177,255,.2)}
+  .bbuy{background:rgba(105,240,174,.1);color:var(--green);border:1px solid rgba(105,240,174,.2)}
+  .bgst{background:rgba(240,184,48,.1);color:var(--gold);border:1px solid rgba(240,184,48,.2)}
+
+  /* P&L table */
+  .ptbl{width:100%;border-collapse:collapse;font-family:'DM Mono',monospace}
+  .ptbl th{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:8px 10px;text-align:right;border-bottom:1px solid var(--border2);font-weight:500;white-space:nowrap}
+  .ptbl th:first-child,.ptbl th:nth-child(2){text-align:left}
+  .ptbl td{padding:8px 10px;font-size:12px;border-bottom:1px solid rgba(255,255,255,.03);text-align:right;white-space:nowrap}
+  .ptbl td:first-child,.ptbl td:nth-child(2){text-align:left}
+  .ptbl tr:hover td{background:rgba(255,255,255,.025)}
+  .mv{font-family:'Syne Mono',monospace;font-size:13px;font-weight:700}
+  .np{color:var(--green)!important}
+  .nn{color:var(--red)!important}
+  .nv{font-family:'Syne Mono',monospace;font-size:13px;font-weight:700}
+  .br td{background:rgba(240,184,48,.05)!important;border-top:1px dashed var(--gold-dim);border-bottom:1px dashed var(--gold-dim)}
+  .vd{font-size:10px;letter-spacing:.07em;font-weight:600;padding:3px 8px;border-radius:2px;display:inline-block}
+  .v0{background:rgba(255,82,82,.12);color:var(--red2)}
+  .v1{background:rgba(255,171,64,.12);color:var(--amber)}
+  .v2{background:rgba(105,240,174,.1);color:var(--green)}
+  .v3{background:rgba(105,240,174,.18);color:var(--green2)}
+  .v4{background:rgba(240,184,48,.14);color:var(--gold2)}
+  .v5{background:rgba(240,184,48,.22);color:var(--gold3);border:1px solid var(--gold-dim)}
+  .bc{min-width:100px}
+  .bw{display:flex;align-items:center;gap:7px}
+  .bt2{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+  .bf{height:100%;border-radius:2px;transition:width .4s ease}
+  .bp{font-size:10px;color:var(--muted);min-width:32px;text-align:right}
+
+  /* Chart */
+  .chw{background:var(--bg2);border:1px solid var(--border2);padding:18px}
+  .chh{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+  .cht{font-size:13px;font-weight:700;color:var(--gold2);letter-spacing:.04em}
+  .chs{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:3px}
+  .chl{display:flex;gap:14px;flex-wrap:wrap}
+  .cli{display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:10px;color:var(--text2)}
+  .cld{width:10px;height:3px;border-radius:2px}
+
+  /* Info cards */
+  .ig2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .ic{background:var(--bg2);border:1px solid var(--border2);padding:15px 17px;position:relative;overflow:hidden}
+  .ic::after{content:attr(data-n);position:absolute;right:10px;top:50%;transform:translateY(-50%);font-family:'Syne Mono',monospace;font-size:52px;font-weight:700;color:var(--border2);line-height:1;pointer-events:none}
+  .icl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .icv{font-family:'Syne Mono',monospace;font-size:24px;font-weight:700;color:var(--gold2);line-height:1;margin-bottom:5px}
+  .icv.r{color:var(--red)}.icv.g{color:var(--green)}.icv.a{color:var(--amber)}
+  .icn{font-family:'DM Mono',monospace;font-size:10px;color:var(--text2);line-height:1.5}
+
+  /* Notes */
+  .nb{background:var(--bg2);border:1px solid var(--border2);border-left:3px solid var(--gold);padding:17px 20px}
+  .nb h3{font-size:11px;font-weight:700;color:var(--gold2);letter-spacing:.12em;text-transform:uppercase;margin-bottom:11px;font-family:'DM Mono',monospace}
+  .nb ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+  .nb li{font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);line-height:1.6;padding-left:15px;position:relative}
+  .nb li::before{content:'›';position:absolute;left:0;color:var(--gold);font-size:14px;top:-1px}
+  .nb li strong{color:var(--gold2)}
+
+  footer{border-top:1px solid var(--border);padding:16px 22px;max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  footer p{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)}
+  footer a{color:var(--gold-dim);text-decoration:none}
+  footer a:hover{color:var(--gold)}
+
+  @keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  .fu{animation:fu .4s ease both}
+  .fu:nth-child(1){animation-delay:.04s}.fu:nth-child(2){animation-delay:.08s}
+  .fu:nth-child(3){animation-delay:.12s}.fu:nth-child(4){animation-delay:.16s}
+
+  @media(max-width:768px){
+    header{padding:0 13px}.page{padding:16px 13px 60px}
+    .hero{grid-template-columns:1fr}.htitle{font-size:26px}
+    .cs{grid-template-columns:repeat(2,1fr)}
+    .ptbl th,.ptbl td{padding:6px 7px;font-size:11px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hb">
+    <div class="bm">Au</div>
+    <div>
+      <div class="bt">MCX Gold Cost Calculator</div>
+      <div class="bs">Transaction Cost &amp; P&amp;L Simulator · India</div>
+    </div>
+  </div>
+  <div class="hm">
+    <div class="hb2"><span class="ld"></span>Auto-Calculates</div>
+    <div class="hb2">SEBI Regulated · MCX</div>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero fu">
+    <div>
+      <div class="eyebrow">// mcx_gold_trade_simulator_v3.0</div>
+      <h1 class="htitle">Trade Cost<span>&amp; P&amp;L Calculator</span></h1>
+      <p class="hdesc">Full breakdown of every rupee lost to brokerage, CTT, transaction charges, GST, stamp duty, and income tax — before you place a single trade.</p>
+    </div>
+    <div class="hv">
+      <div>Includes <strong>CTT 0.01%</strong></div>
+      <div>Includes <strong>Slab Tax</strong></div>
+      <div>Includes <strong>All 6 Charges</strong></div>
+      <div style="margin-top:8px;color:var(--gold);font-size:12px">Mini · Petal · 1kg · Guinea</div>
+    </div>
+  </div>
+
+  <!-- S1: INPUTS — always visible -->
+  <div class="fu">
+    <div class="sl">01 · Configure Your Trade</div>
+    <div class="ig">
+
+      <div class="ib">
+        <div class="il">Gold Price <span class="iu">₹ per 10g</span></div>
+        <input class="if" type="number" id="goldPrice" value="150000" min="50000" max="400000" step="100" oninput="ss('goldPrice','sg');calc()">
+        <div class="sw">
+          <input type="range" id="sg" min="50000" max="400000" step="1000" value="150000" oninput="si('sg','goldPrice');calc()">
+          <div class="sr"><span>₹50k</span><span>₹4L</span></div>
+        </div>
+        <div class="ih">MCX Live Price</div>
+      </div>
+
+      <div class="ib">
+        <div class="il">Instrument <span class="iu">Contract</span></div>
+        <select class="if" id="instrument" onchange="calc()">
+          <option value="100">Gold Mini (100g)</option>
+          <option value="1000">Gold 1kg (1000g)</option>
+          <option value="1">Gold Petal (1g)</option>
+          <option value="8">Gold Guinea (8g)</option>
+        </select>
+        <div class="ih" id="lotHelper">100 gram lot</div>
+      </div>
+
+      <div class="ib">
+        <div class="il">No. of Lots <span class="iu">Quantity</span></div>
+        <input class="if" type="number" id="numLots" value="1" min="1" max="50" step="1" oninput="ss('numLots','snl');calc()">
+        <div class="sw">
+          <input type="range" id="snl" min="1" max="20" step="1" value="1" oninput="si('snl','numLots');calc()">
+          <div class="sr"><span>1</span><span>20</span></div>
+        </div>
+        <div class="ih">Position size</div>
+      </div>
+
+      <div class="ib">
+        <div class="il">Brokerage <span class="iu">₹ per order</span></div>
+        <input class="if" type="number" id="brokerage" value="20" min="0" max="500" step="5" oninput="ss('brokerage','sb');calc()">
+        <div class="sw">
+          <input type="range" id="sb" min="0" max="200" step="5" value="20" oninput="si('sb','brokerage');calc()">
+          <div class="sr"><span>₹0</span><span>₹200</span></div>
+        </div>
+        <div class="ih">Flat fee per side</div>
+      </div>
+
+      <div class="ib">
+        <div class="il">Tax Slab <span class="iu">Rate</span></div>
+        <select class="if" id="taxSlab" onchange="calc()">
+          <option value="0">0% (Below ₹3L)</option>
+          <option value="5">5% (₹3L–7L)</option>
+          <option value="10">10% (₹7L–10L)</option>
+          <option value="15">15% (₹10L–12L)</option>
+          <option value="20">20% (₹12L–15L)</option>
+          <option value="30" selected>30% (Above ₹15L)</option>
+        </select>
+        <div class="ih">Futures = business income</div>
+      </div>
+
+      <div class="ib">
+        <div class="il">Trade Type <span class="iu">Direction</span></div>
+        <select class="if" id="tradeType" onchange="calc()">
+          <option value="long">Long (Buy → Sell)</option>
+          <option value="short">Short (Sell → Buy)</option>
+        </select>
+        <div class="ih">CTT on sell side only</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- S2: Contract Summary -->
+  <div class="cw fu">
+    <div class="ch" onclick="tog('b2','s2body')">
+      <div class="sl sl-plain">02 · Contract Summary</div>
+      <button class="cbtn" id="b2">▴ Collapse</button>
+    </div>
+    <div class="cbody" id="s2body">
+      <div class="cs">
+        <div class="cc"><div class="cl">Contract Value</div><div class="cv xl" id="contractVal">₹15,00,000</div><div class="csb" id="contractCalc">₹1,50,000 × 10 (100g)</div></div>
+        <div class="cc"><div class="cl">Est. SPAN Margin (~4%)</div><div class="cv" id="marginVal">₹60,000</div><div class="csb">Capital required</div></div>
+        <div class="cc hl"><div class="cl">Total Round-Trip Cost</div><div class="cv" id="totalCostDisp" style="color:var(--red)">₹305</div><div class="csb">All 6 charges</div></div>
+        <div class="cc"><div class="cl">Break-Even Move</div><div class="cv" id="beMove" style="color:var(--amber)">₹31/10g</div><div class="csb">Costs only, pre-tax</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S3: Cost Breakdown -->
+  <div class="cw fu">
+    <div class="ch" onclick="tog('b3','s3body')">
+      <div class="sl sl-plain">03 · Full Cost Breakdown</div>
+      <button class="cbtn" id="b3">▴ Collapse</button>
+    </div>
+    <div class="cbody" id="s3body">
+      <table class="ctbl">
+        <thead><tr><th style="width:32%">Charge</th><th>Formula</th><th></th><th style="text-align:right">Amount (₹)</th></tr></thead>
+        <tbody id="costBody"></tbody>
+        <tfoot><tr class="tr"><td colspan="3">Total Round-Trip Transaction Cost</td><td id="totalCostFoot">₹305</td></tr></tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- S4: Key Numbers -->
+  <div class="cw fu">
+    <div class="ch" onclick="tog('b4','s4body')">
+      <div class="sl sl-plain">04 · Key Numbers</div>
+      <button class="cbtn" id="b4">▴ Collapse</button>
+    </div>
+    <div class="cbody" id="s4body">
+      <div class="ig2">
+        <div class="ic" data-n="₹"><div class="icl">Minimum Viable Move</div><div class="icv a" id="minViable">₹300</div><div class="icn" id="minViableNote">After costs + tax. Below this = negative EV.</div></div>
+        <div class="ic" data-n="%"><div class="icl">Cost as % of Contract</div><div class="icv" id="costPct">0.020%</div><div class="icn">Costs hit on wins AND losses — unavoidable.</div></div>
+        <div class="ic" data-n="!"><div class="icl">CTT Share of Total Cost</div><div class="icv r" id="cttShare">49%</div><div class="icn">Largest single cost. Paid on every sell trade.</div></div>
+        <div class="ic" data-n="→"><div class="icl">Net on 1% Move</div><div class="icv g" id="onepcMove">₹7,145</div><div class="icn">After all costs and tax. Gold moves 1% every 2–4 days.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S5: P&L Table -->
+  <div class="cw fu">
+    <div class="ch" onclick="tog('b5','s5body')">
+      <div class="sl sl-plain">05 · P&amp;L Simulation — All Scenarios</div>
+      <button class="cbtn" id="b5">▴ Collapse</button>
+    </div>
+    <div class="cbody" id="s5body">
+      <div style="overflow-x:auto">
+        <table class="ptbl">
+          <thead>
+            <tr>
+              <th>Move ₹/10g</th><th>% of Price</th><th>Gross P&amp;L</th>
+              <th>After Costs</th>
+              <th>Tax <span id="taxHead" style="font-size:8px;color:var(--muted)">(30%)</span></th>
+              <th>Net Take-Home</th><th>Friction %</th><th>Verdict</th>
+            </tr>
+          </thead>
+          <tbody id="pnlBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- S6: Chart -->
+  <div class="cw fu">
+    <div class="ch" onclick="tog('b6','s6body')">
+      <div class="sl sl-plain">06 · Net P&amp;L vs Price Move</div>
+      <button class="cbtn" id="b6">▴ Collapse</button>
+    </div>
+    <div class="cbody" id="s6body">
+      <div class="chw">
+        <div class="chh">
+          <div>
+            <div class="cht">Net Take-Home After All Costs &amp; Tax</div>
+            <div class="chs">Red bars = net loss after costs. Break-even line shown in dashed amber.</div>
+          </div>
+          <div class="chl">
+            <div class="cli"><div class="cld" style="background:rgba(240,184,48,.5)"></div>Gross P&amp;L</div>
+            <div class="cli"><div class="cld" style="background:rgba(105,240,174,.7)"></div>Net Profit</div>
+            <div class="cli"><div class="cld" style="background:rgba(255,82,82,.7)"></div>Net Loss</div>
+            <div class="cli"><div class="cld" style="background:transparent;border-top:2px dashed var(--amber);width:14px;height:0"></div>Break-Even</div>
+          </div>
+        </div>
+        <canvas id="pnlChart" height="250"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- S7: Notes -->
+  <div class="cw fu">
+    <div class="ch" onclick="tog('b7','s7body')">
+      <div class="sl sl-plain">07 · Regulatory &amp; Tax Notes</div>
+      <button class="cbtn" id="b7">▴ Collapse</button>
+    </div>
+    <div class="cbody" id="s7body">
+      <div class="nb">
+        <h3>// Key Context for MCX Gold Traders</h3>
+        <ul>
+          <li><strong>CTT</strong> = 0.01% on SELL side only, introduced July 2013. Non-deductible for salaried individuals. Paid on every exit, profit or loss.</li>
+          <li><strong>Income Tax</strong> — MCX futures P&amp;L is non-speculative business income under Section 43(5). Taxed at full slab rate — not capital gains.</li>
+          <li><strong>Losses are deductible</strong> — set off against other business income (not salary). Carry forward up to 8 years.</li>
+          <li><strong>GST 18%</strong> applies only to brokerage and MCX exchange transaction charges — not on CTT, stamp duty, or SEBI fees.</li>
+          <li><strong>Stamp Duty</strong> = 0.002% on buy side, Central Stamp Duty effective June 2020.</li>
+          <li><strong>Scalping MCX Gold is structurally unprofitable</strong> — min viable move after all friction is ₹300+/10g. Trade multi-day swings, not noise.</li>
+          <li><strong>SEBI turnover fee</strong> = ₹10 per crore of total turnover (both sides combined).</li>
+          <li><strong>Net P&amp;L on ₹0 move</strong> = negative because CTT + all charges still apply even if price doesn't move.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>MCX Gold Cost Calculator v3.0 · Retail Traders · India · <a href="https://github.com" target="_blank">github.com</a></p>
+  <p>CTT 0.01% · MCX Txn 0.0021% · SEBI ₹10/cr · Stamp 0.002% · GST 18%</p>
+  <p>⚠ Not financial advice. Verify charges with your broker.</p>
+</footer>
+
+<script>
+const MCX_TXN=0.0021/100, CTT=0.01/100, SEBI=10, STAMP=0.002/100, GST=0.18;
+const MOVES=[-300,-200,-100,0,50,100,150,200,300,400,500,750,1000,1500,2000,3000,5000,7500,10000];
+
+let chart=null;
+const colStates={};
+
+function tog(btnId,bodyId){
+  const body=document.getElementById(bodyId), btn=document.getElementById(btnId);
+  colStates[bodyId]=!colStates[bodyId];
+  body.classList.toggle('collapsed', colStates[bodyId]);
+  btn.textContent=colStates[bodyId]?'▾ Expand':'▴ Collapse';
+}
+
+function ss(iId,sId){
+  const v=parseFloat(document.getElementById(iId).value)||0;
+  const s=document.getElementById(sId);
+  if(s) s.value=Math.min(+s.max,Math.max(+s.min,v));
+}
+function si(sId,iId){document.getElementById(iId).value=document.getElementById(sId).value;}
+
+const fmt=n=>Math.round(n).toLocaleString('en-IN');
+const fmt2=n=>Math.abs(n)<0.01?'0.00':Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+
+function calc(){
+  const gp  = parseFloat(document.getElementById('goldPrice').value)||0;
+  const lg  = parseFloat(document.getElementById('instrument').value)||100;
+  const nl  = parseFloat(document.getElementById('numLots').value)||1;
+  const bp  = parseFloat(document.getElementById('brokerage').value)||0;
+  const tr  = parseFloat(document.getElementById('taxSlab').value)/100;
+
+  document.getElementById('lotHelper').textContent = lg+' gram lot';
+  document.getElementById('taxHead').textContent   = `(${(tr*100).toFixed(0)}%)`;
+
+  const cv   = gp*(lg/10)*nl;
+  const turn = cv*2;
+
+  const brok = bp*2*nl;
+  const mcx  = MCX_TXN*turn;
+  const ctt  = CTT*cv;
+  const sebi = (SEBI/1e7)*turn;
+  const gst  = GST*(brok+mcx);
+  const stmp = STAMP*cv;
+  const tot  = brok+mcx+ctt+sebi+gst+stmp;
+
+  const pmg  = (lg/10)*nl;
+  const be   = tot/pmg;
+
+  // Strip
+  document.getElementById('contractVal').textContent  = '₹'+fmt(cv);
+  document.getElementById('contractCalc').textContent = `₹${fmt(gp)} × ${lg/10} (${lg}g) × ${nl} lot${nl>1?'s':''}`;
+  document.getElementById('marginVal').textContent    = '₹'+fmt(cv*0.04);
+  document.getElementById('totalCostDisp').textContent= '₹'+fmt2(tot);
+  document.getElementById('beMove').textContent       = '₹'+be.toFixed(0)+'/10g';
+
+  // Cost table
+  const rows=[
+    {n:'Brokerage',        cls:'bboth',t:'BOTH SIDES', f:`₹${bp} × 2 × ${nl} lot${nl>1?'s':''}`, v:brok},
+    {n:'MCX Transaction',  cls:'bboth',t:'BOTH SIDES', f:`0.0021% × ₹${fmt(turn)} turnover`,      v:mcx },
+    {n:'CTT — Commodity Transaction Tax', cls:'bsell',t:'SELL ONLY', f:`0.01% × ₹${fmt(cv)} sell value`, v:ctt },
+    {n:'SEBI Turnover Fee',cls:'bboth',t:'BOTH SIDES', f:`₹10/crore × ₹${(turn/1e7).toFixed(5)}cr`, v:sebi},
+    {n:'GST (18%)',        cls:'bgst', t:'ON CHARGES', f:`18% × (₹${fmt2(brok)}+₹${fmt2(mcx)})`,  v:gst },
+    {n:'Stamp Duty',       cls:'bbuy', t:'BUY ONLY',   f:`0.002% × ₹${fmt(cv)} buy value`,        v:stmp},
+  ];
+  document.getElementById('costBody').innerHTML=rows.map(r=>`
+    <tr>
+      <td>${r.n}<span class="cb ${r.cls}">${r.t}</span></td>
+      <td style="font-size:11px;color:var(--muted)">${r.f}</td><td></td>
+      <td>₹${fmt2(r.v)}</td>
+    </tr>`).join('');
+  document.getElementById('totalCostFoot').textContent='₹'+fmt2(tot);
+
+  // Key stats
+  document.getElementById('costPct').textContent   = (tot/cv*100).toFixed(4)+'%';
+  document.getElementById('cttShare').textContent  = Math.round(ctt/tot*100)+'%';
+  document.getElementById('minViable').textContent = '₹'+Math.ceil(tot*2/pmg/10)*10+'/10g';
+  document.getElementById('minViableNote').textContent = `After costs + ${(tr*100).toFixed(0)}% tax. Below this = negative EV.`;
+  const onePc=(cv*0.01-tot)*(1-tr);
+  document.getElementById('onepcMove').textContent = '₹'+fmt(Math.max(0,onePc));
+
+  // P&L table + chart
+  const clbls=[],cgross=[],cnet=[];
+  let html='';
+  const maxA=Math.max(...MOVES.map(m=>Math.abs((m*pmg-tot)*(1-tr))));
+
+  MOVES.forEach(m=>{
+    const gross = m*pmg;
+    const ac    = gross-tot;
+    const tax   = ac>0?ac*tr:0;
+    const net   = ac-tax;
+    const fric  = gross!==0?((gross-net)/Math.abs(gross)*100):0;
+    const mp    = gp>0?(m/gp*100).toFixed(2):'0';
+    const isB   = m>=0&&m<=be+25&&m>=be-15;
+
+    let v='',vc='';
+    if(m<0)           {v='✗ LOSS TRADE';vc='v0'}
+    else if(net<0)    {v='✗ NET LOSS';  vc='v0'}
+    else if(net<tot)  {v='⚠ TOO THIN';  vc='v1'}
+    else if(m<300)    {v='△ BORDERLINE';vc='v1'}
+    else if(m<600)    {v='✓ VIABLE';    vc='v2'}
+    else if(m<1500)   {v='✓✓ GOOD';    vc='v3'}
+    else if(m<3000)   {v='★ EXCELLENT'; vc='v4'}
+    else              {v='★★ TARGET';   vc='v5'}
+
+    const bw=maxA>0?Math.min(100,Math.abs(net)/maxA*100).toFixed(1):0;
+    const bc=net>=0?'#69f0ae':'#ff5252';
+    const gc=m<0?'var(--red2)':'var(--gold2)';
+    const sign=m>=0?'+':'';
+
+    html+=`
+      <tr class="${isB?'br':''}">
+        <td><span class="mv" style="color:${gc}">${sign}₹${Math.abs(m).toLocaleString('en-IN')}</span></td>
+        <td><span style="color:var(--muted);font-size:11px">${sign}${mp}%</span></td>
+        <td style="color:${gross>=0?'var(--text2)':'var(--red2)'}">₹${fmt(gross)}</td>
+        <td style="color:${ac>=0?'var(--amber)':'var(--red2)'}">₹${ac<0?'-':''}${fmt2(Math.abs(ac))}</td>
+        <td style="color:var(--red)">${tax>0?'−₹'+fmt2(tax):'—'}</td>
+        <td><span class="nv ${net>=0?'np':'nn'}">${net<0?'-':''}₹${fmt2(Math.abs(net))}</span></td>
+        <td class="bc"><div class="bw"><div class="bt2"><div class="bf" style="width:${bw}%;background:${bc}"></div></div><span class="bp" style="color:${net>=0?'var(--muted)':'var(--red)'}">${Math.abs(fric).toFixed(1)}%</span></div></td>
+        <td><span class="vd ${vc}">${v}</span></td>
+      </tr>`;
+
+    const lbl=m>=1000?'₹'+(m/1000).toFixed(1)+'k':(m<0?'−₹'+Math.abs(m):'₹'+m);
+    clbls.push(lbl); cgross.push(Math.round(gross)); cnet.push(Math.round(net));
+  });
+
+  document.getElementById('pnlBody').innerHTML=html;
+  drawChart(clbls,cgross,cnet);
+}
+
+function drawChart(labels,gross,net){
+  const ctx=document.getElementById('pnlChart').getContext('2d');
+  if(chart) chart.destroy();
+  const bg=net.map(v=>v>=0?'rgba(105,240,174,.55)':'rgba(255,82,82,.55)');
+  const bd=net.map(v=>v>=0?'rgba(105,240,174,.9)':'rgba(255,82,82,.9)');
+
+  chart=new Chart(ctx,{
+    data:{
+      labels,
+      datasets:[
+        {type:'bar',label:'Gross P&L',data:gross,backgroundColor:'rgba(240,184,48,.2)',borderColor:'rgba(240,184,48,.5)',borderWidth:1,borderRadius:2,order:2},
+        {type:'bar',label:'Net P&L',  data:net,  backgroundColor:bg,borderColor:bd,borderWidth:1,borderRadius:2,order:1},
+        {type:'line',label:'Break-Even',data:Array(labels.length).fill(0),borderColor:'rgba(255,171,64,.55)',borderWidth:1.5,borderDash:[5,4],pointRadius:0,fill:false,order:0}
+      ]
+    },
+    options:{
+      responsive:true,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#1c1c19',borderColor:'#3e3e35',borderWidth:1,
+          titleFont:{family:'DM Mono',size:11},bodyFont:{family:'DM Mono',size:11},
+          callbacks:{
+            label:c=>{
+              if(c.dataset.label==='Break-Even') return null;
+              const v=c.parsed.y;
+              return ` ${c.dataset.label}: ${v<0?'-':''}₹${Math.abs(v).toLocaleString('en-IN')}`;
+            }
+          }
+        }
+      },
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#7a7260',font:{family:'DM Mono',size:9},maxRotation:45}},
+        y:{
+          grid:{color:'rgba(255,255,255,.04)'},
+          ticks:{
+            color:'#7a7260',font:{family:'DM Mono',size:9},
+            callback:v=>{const a=Math.abs(v),s=v<0?'-':'';return s+'₹'+(a>=1000?(a/1000).toFixed(0)+'k':a)}
+          }
+        }
+      }
+    }
+  });
+}
+
+calc();
+</script>
+</body>
+</html>
