@@ -1,2 +1,1271 @@
 Gold
 https://avanikutle.github.io/gold/checklist.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCX Gold Trade Cost Calculator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne+Mono&family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0a0a08;
+    --bg2:      #111110;
+    --bg3:      #1a1a17;
+    --bg4:      #222220;
+    --gold:     #c9a84c;
+    --gold2:    #e8c96a;
+    --gold3:    #f5e098;
+    --gold-dim: #7a5e1a;
+    --red:      #e05252;
+    --green:    #5cb85c;
+    --amber:    #e8a020;
+    --blue:     #5b9bd5;
+    --text:     #d4cfc5;
+    --muted:    #6b6658;
+    --border:   #2a2a25;
+    --border2:  #3a3a32;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Scanline overlay ───────────────────────────────── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── Header ─────────────────────────────────────────── */
+  header {
+    border-bottom: 1px solid var(--border2);
+    background: var(--bg2);
+    padding: 0 32px;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 0;
+  }
+
+  .brand-mark {
+    width: 36px; height: 36px;
+    border: 2px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne Mono', monospace;
+    font-size: 15px;
+    color: var(--gold);
+    font-weight: 700;
+    position: relative;
+  }
+  .brand-mark::before {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    background: var(--gold);
+    opacity: 0.1;
+  }
+
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .brand-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--gold2);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .brand-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .hm-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1px solid var(--border2);
+    border-radius: 2px;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ── Layout ─────────────────────────────────────────── */
+  .page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* ── Hero ───────────────────────────────────────────── */
+  .hero {
+    margin-bottom: 40px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 24px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--gold-dim);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .hero-title {
+    font-size: 38px;
+    font-weight: 800;
+    line-height: 1.05;
+    color: var(--gold3);
+    letter-spacing: -0.02em;
+  }
+
+  .hero-title span {
+    color: var(--gold);
+    display: block;
+  }
+
+  .hero-desc {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 12px;
+    max-width: 480px;
+    line-height: 1.7;
+  }
+
+  .hero-version {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    line-height: 2;
+  }
+
+  .hero-version strong { color: var(--gold); }
+
+  /* ── Section label ──────────────────────────────────── */
+  .sec-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sec-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Input grid ─────────────────────────────────────── */
+  .inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .input-block {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    padding: 14px 16px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+
+  .input-block:focus-within {
+    border-color: var(--gold-dim);
+  }
+
+  .input-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--gold-dim);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .input-block:focus-within::before { opacity: 1; }
+
+  .input-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .input-unit {
+    font-size: 9px;
+    color: var(--gold-dim);
+  }
+
+  .input-field {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'Syne Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gold2);
+    caret-color: var(--gold);
+    padding: 0;
+  }
+
+  .input-field::placeholder { color: var(--border2); }
+
+  select.input-field {
+    font-size: 14px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    padding-right: 20px;
+  }
+
+  .input-helper {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* ── Contract value strip ───────────────────────────── */
+  .contract-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border2);
+    margin-bottom: 32px;
+  }
+
+  .cs-cell {
+    background: var(--bg2);
+    padding: 16px 18px;
+    position: relative;
+  }
+
+  .cs-cell.highlight {
+    background: var(--bg3);
+  }
+
+  .cs-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .cs-value {
+    font-family: 'Syne Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gold2);
+  }
+
+  .cs-value.large { font-size: 26px; }
+
+  .cs-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  /* ── Cost breakdown ─────────────────────────────────── */
+  .cost-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 32px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .cost-table th {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border2);
+    font-weight: 500;
+  }
+
+  .cost-table th:last-child { text-align: right; }
+
+  .cost-table td {
+    padding: 11px 14px;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  .cost-table td:last-child {
+    text-align: right;
+    font-weight: 600;
+    color: var(--amber);
+    font-family: 'Syne Mono', monospace;
+    font-size: 13px;
+  }
+
+  .cost-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .cost-table .formula {
+    font-size: 10px;
+    color: var(--muted);
+    display: block;
+    margin-top: 2px;
+  }
+
+  .cost-table .total-row td {
+    border-top: 1px solid var(--border2);
+    border-bottom: none;
+    padding-top: 14px;
+    font-weight: 700;
+  }
+
+  .cost-table .total-row td:first-child {
+    color: var(--gold2);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .cost-table .total-row td:last-child {
+    color: var(--red);
+    font-size: 16px;
+  }
+
+  .cost-badge {
+    display: inline-block;
+    font-size: 8px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    margin-left: 8px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    vertical-align: middle;
+  }
+
+  .badge-sell { background: rgba(224,82,82,0.15); color: var(--red); border: 1px solid rgba(224,82,82,0.3); }
+  .badge-both { background: rgba(91,155,213,0.12); color: var(--blue); border: 1px solid rgba(91,155,213,0.25); }
+  .badge-buy  { background: rgba(92,184,92,0.12); color: var(--green); border: 1px solid rgba(92,184,92,0.25); }
+  .badge-gst  { background: rgba(201,168,76,0.1); color: var(--gold); border: 1px solid rgba(201,168,76,0.2); }
+
+  /* ── P&L Simulation ─────────────────────────────────── */
+  .pnl-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 32px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .pnl-table th {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 10px 12px;
+    text-align: right;
+    border-bottom: 1px solid var(--border2);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .pnl-table th:first-child { text-align: left; }
+  .pnl-table th:nth-child(2) { text-align: left; }
+
+  .pnl-table td {
+    padding: 10px 12px;
+    font-size: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .pnl-table td:first-child { text-align: left; }
+  .pnl-table td:nth-child(2) { text-align: left; }
+
+  .pnl-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .move-val {
+    font-family: 'Syne Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold2);
+  }
+
+  .verdict {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  .v-no   { background: rgba(224,82,82,0.12); color: var(--red); }
+  .v-warn { background: rgba(232,160,32,0.12); color: var(--amber); }
+  .v-ok   { background: rgba(92,184,92,0.12); color: var(--green); }
+  .v-good { background: rgba(92,184,92,0.18); color: #7fe87f; }
+  .v-fire { background: rgba(201,168,76,0.15); color: var(--gold2); }
+  .v-moon { background: rgba(201,168,76,0.25); color: var(--gold3); border: 1px solid var(--gold-dim); }
+
+  .net-value {
+    font-family: 'Syne Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .net-pos { color: var(--green); }
+  .net-neg { color: var(--red); }
+
+  .breakeven-row td {
+    background: rgba(201,168,76,0.05) !important;
+    border-top: 1px dashed var(--gold-dim);
+    border-bottom: 1px dashed var(--gold-dim);
+  }
+
+  /* ── Bar fill ───────────────────────────────────────── */
+  .bar-cell { min-width: 120px; }
+
+  .bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .bar-track {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .bar-pct {
+    font-size: 10px;
+    color: var(--muted);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  /* ── Chart ──────────────────────────────────────────── */
+  .chart-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+
+  .chart-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .chart-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gold2);
+    letter-spacing: 0.04em;
+  }
+
+  .chart-subtitle {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  .chart-legend {
+    display: flex;
+    gap: 16px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 8px; height: 3px;
+    border-radius: 2px;
+  }
+
+  canvas { max-height: 300px; }
+
+  /* ── Info cards ─────────────────────────────────────── */
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .info-card {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .info-card::after {
+    content: attr(data-n);
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Syne Mono', monospace;
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--border2);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .ic-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .ic-value {
+    font-family: 'Syne Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--gold2);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .ic-value.red { color: var(--red); }
+  .ic-value.green { color: var(--green); }
+  .ic-value.amber { color: var(--amber); }
+
+  .ic-note {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ── Notes section ──────────────────────────────────── */
+  .notes-box {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-left: 3px solid var(--gold-dim);
+    padding: 20px 24px;
+    margin-bottom: 32px;
+  }
+
+  .notes-box h3 {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .notes-box ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .notes-box li {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text);
+    line-height: 1.6;
+    padding-left: 16px;
+    position: relative;
+  }
+
+  .notes-box li::before {
+    content: '›';
+    position: absolute;
+    left: 0;
+    color: var(--gold-dim);
+    font-size: 14px;
+    top: -1px;
+  }
+
+  /* ── Footer ─────────────────────────────────────────── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 20px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  footer p {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  footer a {
+    color: var(--gold-dim);
+    text-decoration: none;
+  }
+
+  footer a:hover { color: var(--gold); }
+
+  /* ── Animations ─────────────────────────────────────── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-up {
+    animation: fadeUp 0.4s ease both;
+  }
+
+  .fade-up:nth-child(1) { animation-delay: 0.05s; }
+  .fade-up:nth-child(2) { animation-delay: 0.10s; }
+  .fade-up:nth-child(3) { animation-delay: 0.15s; }
+  .fade-up:nth-child(4) { animation-delay: 0.20s; }
+  .fade-up:nth-child(5) { animation-delay: 0.25s; }
+
+  /* ── Responsive ─────────────────────────────────────── */
+  @media (max-width: 768px) {
+    header { padding: 0 16px; }
+    .page { padding: 20px 16px 60px; }
+    .hero { grid-template-columns: 1fr; }
+    .hero-title { font-size: 26px; }
+    .contract-strip { grid-template-columns: repeat(2,1fr); }
+    .pnl-table { font-size: 11px; }
+    .pnl-table th, .pnl-table td { padding: 8px; }
+  }
+
+  /* ── Tooltip ────────────────────────────────────────── */
+  [data-tip] {
+    position: relative;
+    cursor: help;
+    border-bottom: 1px dashed var(--muted);
+  }
+
+  [data-tip]:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg4);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    white-space: nowrap;
+    padding: 5px 10px;
+    z-index: 999;
+    pointer-events: none;
+    border-radius: 2px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="header-brand">
+    <div class="brand-mark">Au</div>
+    <div class="brand-text">
+      <div class="brand-title">MCX Gold Cost Calculator</div>
+      <div class="brand-sub">Transaction Cost &amp; P&amp;L Simulator · India</div>
+    </div>
+  </div>
+  <div class="header-meta">
+    <div class="hm-badge"><span class="live-dot"></span>Auto-Calculates</div>
+    <div class="hm-badge">SEBI Regulated · MCX</div>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero fade-up">
+    <div>
+      <div class="hero-eyebrow">// mcx_gold_trade_simulator_v2.0</div>
+      <h1 class="hero-title">Trade Cost<span>&amp; P&amp;L Calculator</span></h1>
+      <p class="hero-desc">Full breakdown of every rupee lost to brokerage, CTT, transaction charges, GST, stamp duty, and income tax — before you place a single trade.</p>
+    </div>
+    <div class="hero-version">
+      <div>Includes <strong>CTT</strong></div>
+      <div>Includes <strong>Slab Tax</strong></div>
+      <div>Includes <strong>All Charges</strong></div>
+      <div style="margin-top:8px;color:var(--gold);font-size:12px;">Gold Mini · Gold Petal · Gold 1kg</div>
+    </div>
+  </div>
+
+  <!-- Inputs -->
+  <div class="sec-label fade-up">01 · Configure Your Trade</div>
+  <div class="inputs-grid fade-up">
+
+    <div class="input-block">
+      <div class="input-label">Gold Price <span class="input-unit">₹ per 10g</span></div>
+      <input class="input-field" type="number" id="goldPrice" value="150000" min="1000" step="100" oninput="calculate()">
+      <div class="input-helper">MCX Live Price</div>
+    </div>
+
+    <div class="input-block">
+      <div class="input-label">Instrument <span class="input-unit">Contract</span></div>
+      <select class="input-field" id="instrument" onchange="calculate()">
+        <option value="100">Gold Mini (100g)</option>
+        <option value="1000">Gold 1kg (1000g)</option>
+        <option value="1">Gold Petal (1g)</option>
+        <option value="8">Gold Guinea (8g)</option>
+      </select>
+      <div class="input-helper" id="lotHelper">100 gram lot</div>
+    </div>
+
+    <div class="input-block">
+      <div class="input-label">No. of Lots <span class="input-unit">Quantity</span></div>
+      <input class="input-field" type="number" id="numLots" value="1" min="1" step="1" oninput="calculate()">
+      <div class="input-helper">Position size</div>
+    </div>
+
+    <div class="input-block">
+      <div class="input-label">Brokerage <span class="input-unit">₹ per order</span></div>
+      <input class="input-field" type="number" id="brokerage" value="20" min="0" step="1" oninput="calculate()">
+      <div class="input-helper">Flat fee per side</div>
+    </div>
+
+    <div class="input-block">
+      <div class="input-label">Income Tax Slab <span class="input-unit">Rate</span></div>
+      <select class="input-field" id="taxSlab" onchange="calculate()">
+        <option value="0">0% (Below ₹3L)</option>
+        <option value="5">5% (₹3L–7L)</option>
+        <option value="10">10% (₹7L–10L)</option>
+        <option value="15">15% (₹10L–12L)</option>
+        <option value="20">20% (₹12L–15L)</option>
+        <option value="30" selected>30% (Above ₹15L)</option>
+      </select>
+      <div class="input-helper">Futures = business income</div>
+    </div>
+
+    <div class="input-block">
+      <div class="input-label">Trade Type <span class="input-unit">Direction</span></div>
+      <select class="input-field" id="tradeType" onchange="calculate()">
+        <option value="long">Long (Buy → Sell)</option>
+        <option value="short">Short (Sell → Buy)</option>
+      </select>
+      <div class="input-helper">CTT on sell side only</div>
+    </div>
+
+  </div>
+
+  <!-- Contract Strip -->
+  <div class="sec-label fade-up">02 · Contract Summary</div>
+  <div class="contract-strip fade-up">
+    <div class="cs-cell">
+      <div class="cs-label">Contract Value</div>
+      <div class="cs-value large" id="contractVal">₹15,00,000</div>
+      <div class="cs-sub" id="contractCalc">₹1,50,000 × 10 (100g)</div>
+    </div>
+    <div class="cs-cell">
+      <div class="cs-label">Est. SPAN Margin (~4%)</div>
+      <div class="cs-value" id="marginVal">₹60,000</div>
+      <div class="cs-sub">Capital required</div>
+    </div>
+    <div class="cs-cell highlight">
+      <div class="cs-label">Total Round-Trip Cost</div>
+      <div class="cs-value" id="totalCost" style="color:var(--red);">₹305</div>
+      <div class="cs-sub">All charges combined</div>
+    </div>
+    <div class="cs-cell">
+      <div class="cs-label">Break-Even Move</div>
+      <div class="cs-value" id="beMove" style="color:var(--amber);">₹31/10g</div>
+      <div class="cs-sub">Costs only, pre-tax</div>
+    </div>
+  </div>
+
+  <!-- Cost Breakdown -->
+  <div class="sec-label fade-up">03 · Full Cost Breakdown</div>
+  <table class="cost-table fade-up">
+    <thead>
+      <tr>
+        <th style="width:30%">Charge</th>
+        <th>Rate / Rule</th>
+        <th>Applies To</th>
+        <th style="text-align:right">Amount (₹)</th>
+      </tr>
+    </thead>
+    <tbody id="costBody">
+      <!-- filled by JS -->
+    </tbody>
+    <tfoot>
+      <tr class="total-row">
+        <td colspan="3">Total Round-Trip Transaction Cost</td>
+        <td id="totalCostFoot">₹305</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- Key Stats -->
+  <div class="sec-label fade-up">04 · Key Numbers</div>
+  <div class="info-grid fade-up">
+    <div class="info-card" data-n="₹">
+      <div class="ic-label">Minimum Viable Move</div>
+      <div class="ic-value amber" id="minViable">₹300</div>
+      <div class="ic-note" id="minViableNote">After costs + tax. Anything below this and you're working for the exchange.</div>
+    </div>
+    <div class="info-card" data-n="%">
+      <div class="ic-label">Cost as % of Contract</div>
+      <div class="ic-value" id="costPct">0.020%</div>
+      <div class="ic-note">Round trip. Seems small — but costs are the same on winning AND losing trades.</div>
+    </div>
+    <div class="info-card" data-n="!">
+      <div class="ic-label">CTT Share of Total Cost</div>
+      <div class="ic-value red" id="cttShare">49%</div>
+      <div class="ic-note">CTT is the single largest cost line. Paid on every sell, profit or loss.</div>
+    </div>
+    <div class="info-card" data-n="→">
+      <div class="ic-label">Net on 1% Move</div>
+      <div class="ic-value green" id="onepcMove">₹7,145</div>
+      <div class="ic-note">After all costs and tax. A 1% gold move on one Gold Mini lot.</div>
+    </div>
+  </div>
+
+  <!-- P&L Simulation Table -->
+  <div class="sec-label fade-up">05 · P&amp;L Simulation — Every Scenario</div>
+  <div style="overflow-x:auto;" class="fade-up">
+  <table class="pnl-table">
+    <thead>
+      <tr>
+        <th>Move</th>
+        <th>% Move</th>
+        <th>Gross P&amp;L</th>
+        <th>After Costs</th>
+        <th>Tax <span style="font-size:8px;color:var(--muted)" id="taxHead">(30%)</span></th>
+        <th>Net Take-Home</th>
+        <th>Friction %</th>
+        <th>Verdict</th>
+      </tr>
+    </thead>
+    <tbody id="pnlBody">
+      <!-- filled by JS -->
+    </tbody>
+  </table>
+  </div>
+
+  <!-- Chart -->
+  <div class="sec-label fade-up">06 · Net P&amp;L vs Price Move</div>
+  <div class="chart-wrap fade-up">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Net Take-Home After All Costs &amp; Tax</div>
+        <div class="chart-subtitle">Gross P&amp;L vs Net P&amp;L — the gap is what you lose to friction</div>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(201,168,76,0.5)"></div>Gross P&amp;L</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#5cb85c"></div>Net Take-Home</div>
+        <div class="legend-item"><div class="legend-dot" style="background:rgba(224,82,82,0.6);"></div>Friction Loss</div>
+      </div>
+    </div>
+    <canvas id="pnlChart"></canvas>
+  </div>
+
+  <!-- Notes -->
+  <div class="sec-label fade-up">07 · Important Notes</div>
+  <div class="notes-box fade-up">
+    <h3>// Regulatory &amp; Tax Context</h3>
+    <ul>
+      <li><strong>CTT (Commodity Transaction Tax)</strong> = 0.01% on the SELL side only, introduced July 2013. It is non-deductible against trading losses for salaried individuals.</li>
+      <li><strong>Income Tax on futures</strong> — MCX futures P&amp;L is treated as <data-tip="Not capital gains">non-speculative business income</data-tip> under Section 43(5) of the Income Tax Act. Taxed at your full slab rate.</li>
+      <li><strong>Losses are deductible</strong> — futures losses can be set off against other business income (not salary) and carried forward for 8 years.</li>
+      <li><strong>CTT is paid on losses too</strong> — if you enter a trade and exit at a loss, CTT is still charged on the sell value. The ₹150 walks out regardless.</li>
+      <li><strong>Stamp duty</strong> varies slightly by state. The 0.002% rate shown is the Central Stamp Duty applicable since June 2020.</li>
+      <li><strong>GST 18%</strong> applies only to brokerage and exchange transaction charges — not on CTT, stamp duty, or SEBI fees.</li>
+      <li><strong>Scalping MCX Gold is structurally unprofitable</strong> for retail — the minimum viable move after all friction is ₹200–300/10g. Trade the multi-day trend, not the noise.</li>
+      <li><strong>SEBI turnover fee</strong> = ₹10 per crore of turnover (both sides counted). Very small but worth knowing.</li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<footer>
+  <p>MCX Gold Cost Calculator · Built for retail traders · India · <a href="https://github.com" target="_blank">github.com</a></p>
+  <p>Rates: CTT 0.01% · MCX Txn 0.0021% · SEBI ₹10/cr · Stamp 0.002% · GST 18% on charges</p>
+  <p>Not financial advice. Verify charges with your broker. Rates subject to change.</p>
+</footer>
+
+<script>
+// ──────────────────────────────────────────────────────
+// CONSTANTS
+// ──────────────────────────────────────────────────────
+const MCX_TXN_RATE  = 0.0021 / 100;   // 0.0021% each side
+const CTT_RATE      = 0.01   / 100;   // 0.01% sell side only
+const SEBI_RATE     = 10;             // ₹10 per crore of turnover
+const STAMP_RATE    = 0.002  / 100;   // 0.002% buy side only
+const GST_RATE      = 18    / 100;    // 18% on brokerage + txn charges
+
+const INSTRUMENTS = {
+  '1000': { name: 'Gold 1kg (1000g)',   grams: 1000 },
+  '100':  { name: 'Gold Mini (100g)',   grams: 100  },
+  '8':    { name: 'Gold Guinea (8g)',   grams: 8    },
+  '1':    { name: 'Gold Petal (1g)',    grams: 1    },
+};
+
+// Scenario moves in ₹ per 10g
+const MOVES = [50, 100, 150, 200, 300, 400, 500, 750, 1000, 1500, 2000, 3000, 5000, 7500, 10000];
+
+// ──────────────────────────────────────────────────────
+// CHART
+// ──────────────────────────────────────────────────────
+let chart = null;
+
+function initChart(labels, grossData, netData, frictionData) {
+  const ctx = document.getElementById('pnlChart').getContext('2d');
+  if (chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Gross P&L',
+          data: grossData,
+          backgroundColor: 'rgba(201,168,76,0.25)',
+          borderColor: 'rgba(201,168,76,0.6)',
+          borderWidth: 1,
+          borderRadius: 2,
+          order: 2,
+        },
+        {
+          label: 'Net Take-Home',
+          data: netData,
+          backgroundColor: 'rgba(92,184,92,0.35)',
+          borderColor: 'rgba(92,184,92,0.8)',
+          borderWidth: 1,
+          borderRadius: 2,
+          order: 1,
+        },
+        {
+          label: 'Friction Loss',
+          data: frictionData,
+          type: 'line',
+          backgroundColor: 'transparent',
+          borderColor: 'rgba(224,82,82,0.5)',
+          borderWidth: 2,
+          borderDash: [4, 3],
+          pointRadius: 3,
+          pointBackgroundColor: 'rgba(224,82,82,0.8)',
+          tension: 0.3,
+          order: 0,
+          yAxisID: 'y2',
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1a17',
+          borderColor: '#3a3a32',
+          borderWidth: 1,
+          titleFont: { family: 'DM Mono' },
+          bodyFont: { family: 'DM Mono', size: 11 },
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ₹${ctx.parsed.y.toLocaleString('en-IN')}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          ticks: {
+            color: '#6b6658',
+            font: { family: 'DM Mono', size: 10 },
+            maxRotation: 45,
+          }
+        },
+        y: {
+          position: 'left',
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          ticks: {
+            color: '#6b6658',
+            font: { family: 'DM Mono', size: 10 },
+            callback: v => '₹' + (v >= 1000 ? (v/1000).toFixed(0)+'k' : v)
+          }
+        },
+        y2: {
+          position: 'right',
+          grid: { display: false },
+          ticks: {
+            color: '#e05252',
+            font: { family: 'DM Mono', size: 9 },
+            callback: v => v.toFixed(0) + '%'
+          }
+        }
+      }
+    }
+  });
+}
+
+// ──────────────────────────────────────────────────────
+// MAIN CALCULATE
+// ──────────────────────────────────────────────────────
+function calculate() {
+  const goldPrice   = parseFloat(document.getElementById('goldPrice').value)   || 0;
+  const lotGrams    = parseFloat(document.getElementById('instrument').value)  || 100;
+  const numLots     = parseFloat(document.getElementById('numLots').value)     || 1;
+  const brokPerSide = parseFloat(document.getElementById('brokerage').value)   || 20;
+  const taxRate     = parseFloat(document.getElementById('taxSlab').value)     / 100;
+
+  const inst = INSTRUMENTS[String(lotGrams)] || INSTRUMENTS['100'];
+  document.getElementById('lotHelper').textContent = inst.grams + ' gram lot';
+
+  // Contract value (goldPrice is per 10g, so × grams/10)
+  const contractVal = goldPrice * (lotGrams / 10) * numLots;
+  const sellVal     = contractVal;
+  const buyVal      = contractVal;
+  const turnover    = sellVal + buyVal; // both sides
+
+  // ── Individual costs ──────────────────────────────
+  const brokerage   = brokPerSide * 2 * numLots;
+  const mcxTxn      = MCX_TXN_RATE * turnover;
+  const ctt         = CTT_RATE * sellVal;
+  const sebiFee     = (SEBI_RATE / 1e7) * turnover;
+  const gstBase     = brokerage + mcxTxn;
+  const gst         = GST_RATE * gstBase;
+  const stampDuty   = STAMP_RATE * buyVal;
+  const totalCost   = brokerage + mcxTxn + ctt + sebiFee + gst + stampDuty;
+
+  // ── Update contract strip ─────────────────────────
+  document.getElementById('contractVal').textContent  = '₹' + fmt(contractVal);
+  document.getElementById('contractCalc').textContent = `₹${fmt(goldPrice)} × ${lotGrams/10} (${lotGrams}g) × ${numLots} lot${numLots>1?'s':''}`;
+  document.getElementById('marginVal').textContent    = '₹' + fmt(contractVal * 0.04);
+  document.getElementById('totalCost').textContent    = '₹' + fmt2(totalCost);
+
+  const beMovePer10g = (totalCost / (lotGrams / 10)) / numLots;
+  document.getElementById('beMove').textContent = '₹' + beMovePer10g.toFixed(0) + '/10g';
+
+  // ── Cost table ────────────────────────────────────
+  const costRows = [
+    { label: 'Brokerage',               badge: 'badge-both', badgeText: 'BOTH SIDES', formula: `₹${brokPerSide} × 2 × ${numLots} lot${numLots>1?'s':''}`,  val: brokerage  },
+    { label: 'MCX Transaction Charge',  badge: 'badge-both', badgeText: 'BOTH SIDES', formula: `0.0021% × ₹${fmt(turnover)} (turnover)`,                    val: mcxTxn     },
+    { label: 'CTT — Commodity Transaction Tax', badge: 'badge-sell', badgeText: 'SELL ONLY', formula: `0.01% × ₹${fmt(sellVal)} (sell value)`,              val: ctt        },
+    { label: 'SEBI Turnover Fee',       badge: 'badge-both', badgeText: 'BOTH SIDES', formula: `₹10/crore × ₹${fmt(turnover/1e7,2)} crore`,                 val: sebiFee    },
+    { label: 'GST (18%)',               badge: 'badge-gst',  badgeText: 'ON CHARGES', formula: `18% × (Brokerage ₹${fmt2(brokerage)} + MCX ₹${fmt2(mcxTxn)})`, val: gst   },
+    { label: 'Stamp Duty',              badge: 'badge-buy',  badgeText: 'BUY ONLY',   formula: `0.002% × ₹${fmt(buyVal)} (buy value)`,                      val: stampDuty  },
+  ];
+
+  const costHTML = costRows.map(r => `
+    <tr>
+      <td>
+        ${r.label}
+        <span class="cost-badge ${r.badge}" data-tip="${r.formula}">${r.badgeText}</span>
+      </td>
+      <td style="font-size:11px;color:var(--muted)">${r.formula}</td>
+      <td></td>
+      <td>₹${fmt2(r.val)}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('costBody').innerHTML = costHTML;
+  document.getElementById('totalCostFoot').textContent = '₹' + fmt2(totalCost);
+
+  // ── Key stats ─────────────────────────────────────
+  const costPct = (totalCost / contractVal * 100).toFixed(4) + '%';
+  const cttSharePct = Math.round(ctt / totalCost * 100) + '%';
+  document.getElementById('costPct').textContent  = costPct;
+  document.getElementById('cttShare').textContent = cttSharePct;
+  document.getElementById('taxHead').textContent  = `(${(taxRate*100).toFixed(0)}%)`;
+
+  // Min viable: move where after costs + tax net > 0 meaningfully (> 2× cost)
+  const perMoveGross = lotGrams / 10 * numLots;
+  const minViableMove = Math.ceil(totalCost * 2 / perMoveGross / 10) * 10;
+  document.getElementById('minViable').textContent = '₹' + minViableMove + '/10g';
+  document.getElementById('minViableNote').textContent =
+    `After costs + ${(taxRate*100).toFixed(0)}% tax. Min move for a worthwhile trade.`;
+
+  // 1% move net
+  const onePcGross   = contractVal * 0.01;
+  const onePcNet     = (onePcGross - totalCost) * (1 - taxRate);
+  document.getElementById('onepcMove').textContent = '₹' + fmt(Math.max(0, onePcNet));
+
+  // ── P&L Table ─────────────────────────────────────
+  const chartLabels  = [];
+  const chartGross   = [];
+  const chartNet     = [];
+  const chartFric    = [];
+
+  let pnlHTML = '';
+  const maxNet = (MOVES[MOVES.length-1] * perMoveGross - totalCost) * (1 - taxRate);
+
+  MOVES.forEach(move => {
+    const gross    = move * perMoveGross;
+    const afterCost = gross - totalCost;
+    const tax      = afterCost > 0 ? afterCost * taxRate : 0;
+    const net      = afterCost - tax;
+    const pct      = gross > 0 ? ((gross - net) / gross * 100).toFixed(1) : '—';
+    const movePct  = (move / goldPrice * 100).toFixed(2);
+
+    const isBreakeven = (move >= beMovePer10g && move < beMovePer10g + 30);
+    const rowClass    = isBreakeven ? 'breakeven-row' : '';
+
+    let verdict = '', vClass = '';
+    if (net < 0)                   { verdict = '✗ LOSS';       vClass = 'v-no';   }
+    else if (net < totalCost)      { verdict = '⚠ TOO THIN';   vClass = 'v-warn'; }
+    else if (move < 300)           { verdict = '△ BORDERLINE'; vClass = 'v-warn'; }
+    else if (move < 600)           { verdict = '✓ VIABLE';     vClass = 'v-ok';   }
+    else if (move < 1500)          { verdict = '✓✓ GOOD';      vClass = 'v-good'; }
+    else if (move < 3000)          { verdict = '★ EXCELLENT';  vClass = 'v-fire'; }
+    else                           { verdict = '★★ TARGET';    vClass = 'v-moon'; }
+
+    const barW   = Math.min(100, Math.max(0, net / maxNet * 100)).toFixed(1);
+    const barClr = net > 0 ? '#5cb85c' : '#e05252';
+
+    pnlHTML += `
+      <tr class="${rowClass}">
+        <td><span class="move-val">₹${move.toLocaleString('en-IN')}</span></td>
+        <td><span style="color:var(--muted);font-size:11px">${movePct}%</span></td>
+        <td style="color:var(--text)">₹${fmt(gross)}</td>
+        <td style="color:var(--amber)">₹${fmt2(afterCost)}</td>
+        <td style="color:var(--red)">${tax > 0 ? '−₹' + fmt2(tax) : '—'}</td>
+        <td><span class="net-value ${net >= 0 ? 'net-pos' : 'net-neg'}">₹${fmt2(net)}</span></td>
+        <td class="bar-cell">
+          <div class="bar-wrap">
+            <div class="bar-track">
+              <div class="bar-fill" style="width:${barW}%;background:${barClr}"></div>
+            </div>
+            <span class="bar-pct">${pct}%</span>
+          </div>
+        </td>
+        <td><span class="verdict ${vClass}">${verdict}</span></td>
+      </tr>
+    `;
+
+    chartLabels.push('₹' + (move >= 1000 ? (move/1000).toFixed(1)+'k' : move));
+    chartGross.push(Math.round(gross));
+    chartNet.push(Math.max(0, Math.round(net)));
+    chartFric.push(parseFloat(pct) || 0);
+  });
+
+  document.getElementById('pnlBody').innerHTML = pnlHTML;
+  initChart(chartLabels, chartGross, chartNet, chartFric);
+}
+
+// ──────────────────────────────────────────────────────
+// HELPERS
+// ──────────────────────────────────────────────────────
+function fmt(n, dec = 0) {
+  return Math.round(n).toLocaleString('en-IN');
+}
+
+function fmt2(n) {
+  if (Math.abs(n) < 1) return n.toFixed(2);
+  return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+// ── Init ──────────────────────────────────────────────
+calculate();
+</script>
+</body>
+</html>
