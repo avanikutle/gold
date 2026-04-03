@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gold Futures — Cheatsheet</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0D0D0D;--bg2:#141414;--bg3:#1A1A1A;--bg4:#202020;
+  --gold:#D4A017;--gold2:#F0C040;--gold3:#7A5C0E;
+  --g:#2ECC71;--r:#E74C3C;--b:#5B9CF6;--o:#F0A040;--pu:#A78BFA;
+  --t:#E8E4DC;--t2:#9A9690;--t3:#4A4844;--border:#2A2A2A;
+}
+body{background:var(--bg);color:var(--t);font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.5}
+
+/* HEADER */
+.hdr{background:var(--bg2);border-bottom:2px solid var(--gold3);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.hdr-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--gold2);letter-spacing:-0.5px}
+.hdr-sub{font-size:9px;color:var(--t2);letter-spacing:0.15em;text-transform:uppercase;margin-top:2px}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.b{font-size:9px;padding:3px 8px;border:1px solid;border-radius:2px;letter-spacing:.08em}
+.b-g{border-color:var(--gold3);color:var(--gold)}
+.b-b{border-color:#2a4a80;color:var(--b)}
+.b-gr{border-color:#1a5c30;color:var(--g)}
+
+/* GRID */
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border)}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-6{grid-template-columns:repeat(6,1fr)}
+
+/* CELLS */
+.cell{background:var(--bg2);padding:10px 12px}
+.cell-hdr{background:var(--bg3);padding:5px 12px;border-bottom:1px solid var(--border)}
+.cell-title{font-size:8.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);font-weight:700}
+
+/* BLOCK */
+.block{background:var(--border);margin:1px 0}
+
+/* CONTRACT ROW */
+.cr{display:grid;grid-template-columns:90px 55px 55px 55px 65px 1fr;gap:0}
+.cr>div{padding:7px 10px;border-right:1px solid var(--border);font-size:10.5px}
+.cr>div:last-child{border-right:none}
+.cr.hdr-r>div{font-size:8px;color:var(--t2);letter-spacing:.1em;text-transform:uppercase;background:var(--bg3);padding:5px 10px}
+.cn{color:var(--gold2);font-weight:700}
+.cs{color:var(--t)}
+.tag{font-size:8px;padding:1px 5px;border-radius:1px}
+.tg{background:rgba(212,160,23,.15);color:var(--gold);border:1px solid var(--gold3)}
+.tr{background:rgba(231,76,60,.12);color:var(--r);border:1px solid rgba(231,76,60,.3)}
+.tb{background:rgba(91,156,246,.1);color:var(--b);border:1px solid rgba(91,156,246,.3)}
+
+/* KV */
+.kv{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bg4);font-size:10.5px}
+.kv:last-child{border-bottom:none}
+.kk{color:var(--t2)}
+.kv-v{color:var(--t);text-align:right;font-weight:500}
+
+/* SIGNAL CARDS */
+.sig{padding:8px 10px;border-left:3px solid;margin-bottom:1px}
+.sig-bull{border-color:var(--g);background:rgba(46,204,113,.05)}
+.sig-bear{border-color:var(--r);background:rgba(231,76,60,.05)}
+.sig-weak{border-color:var(--o);background:rgba(240,160,64,.05)}
+.sig-ex{border-color:var(--t3);background:rgba(74,72,68,.08)}
+.sig-head{display:flex;gap:6px;align-items:center;margin-bottom:4px;flex-wrap:wrap}
+.pip{font-size:9px;font-weight:700;padding:2px 6px;border-radius:2px}
+.pip-g{background:rgba(46,204,113,.2);color:var(--g)}
+.pip-r{background:rgba(231,76,60,.15);color:var(--r)}
+.pip-y{background:rgba(240,160,64,.15);color:var(--o)}
+.pip-k{background:rgba(74,72,68,.3);color:var(--t2)}
+.verdict{margin-left:auto;font-size:8px;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+.vc-g{color:var(--g)}.vc-r{color:var(--r)}.vc-o{color:var(--o)}.vc-k{color:var(--t2)}
+.sig p{font-size:10px;color:var(--t2);line-height:1.5}
+
+/* FORMULA */
+.fml{background:var(--bg);border:1px solid var(--border);padding:8px 12px;margin:8px 0;font-size:10.5px;line-height:1.9;border-radius:2px}
+.fg{color:var(--gold)}.fgr{color:var(--g)}.fr{color:var(--r)}.fb{color:var(--b)}.fc{color:var(--t3);font-size:9px}
+
+/* COST TABLE */
+.cost-r{display:grid;grid-template-columns:1fr 70px 80px;padding:5px 10px;border-bottom:1px solid var(--bg4);font-size:10px}
+.cost-r.total{background:rgba(212,160,23,.08);border-top:1px solid var(--gold3);border-bottom:none;font-weight:700}
+.cost-r>.c1{color:var(--t2)}
+.cost-r>.c2{color:var(--gold);text-align:right}
+.cost-r>.c3{color:var(--t);text-align:right}
+
+/* CHAIN */
+.ch-item{display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid var(--bg4);font-size:10px}
+.ch-item:last-child{border-bottom:none}
+.ch-n{color:var(--gold);font-weight:700;min-width:14px;flex-shrink:0}
+.ch-l{color:var(--t);flex:1}
+.ch-r{color:var(--t2);text-align:right;font-size:9px;flex-shrink:0}
+
+/* TAX TABLE */
+.tx-r{display:grid;grid-template-columns:130px 70px 1fr;padding:5px 10px;border-bottom:1px solid var(--bg4);font-size:10px;align-items:start}
+.tx-r.hdr-t{background:var(--bg3)}
+.tx-r.hdr-t>div{color:var(--t2);font-size:8px;letter-spacing:.1em;text-transform:uppercase}
+.tx-r>.t1{color:var(--t);font-weight:500}
+.tx-r>.t2{color:var(--gold);text-align:right;font-weight:700}
+.tx-r>.t3{color:var(--t2)}
+
+/* PARTICIPANT TABLE */
+.pt-r{display:grid;grid-template-columns:120px 70px 1fr;padding:5px 10px;border-bottom:1px solid var(--bg4);font-size:10px}
+.pt-r.hdr-p{background:var(--bg3)}
+.pt-r.hdr-p>div{color:var(--t2);font-size:8px;letter-spacing:.1em;text-transform:uppercase}
+.pt-r>.p1{color:var(--t);font-weight:500}
+.pt-r>.p2{text-align:center}
+.pt-r>.p3{color:var(--t2)}
+
+/* SECTION LABEL */
+.sec-lbl{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold3);font-weight:700;padding:8px 12px 4px;background:var(--bg2)}
+
+/* RULE */
+.rule{height:1px;background:var(--border);margin:0}
+
+/* FULL ROW */
+.full{grid-column:1/-1}
+
+/* IMPORTANT BOX */
+.imp{background:rgba(212,160,23,.07);border:1px solid var(--gold3);padding:8px 12px;margin:4px 0;border-radius:2px;font-size:10.5px;color:var(--t2);line-height:1.6}
+.imp strong{color:var(--gold2)}
+.warn{background:rgba(231,76,60,.06);border:1px solid rgba(231,76,60,.25);padding:8px 12px;margin:4px 0;border-radius:2px;font-size:10.5px;color:var(--t2);line-height:1.6}
+.warn strong{color:var(--r)}
+
+/* COMEX HOURS */
+.hr-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--bg4);font-size:10px}
+.hr-row:last-child{border-bottom:none}
+.hr-l{color:var(--t2)}
+.hr-r{color:var(--gold);font-weight:500}
+
+/* LIST */
+ul.chk{padding-left:0;list-style:none}
+ul.chk li{padding:2px 0;font-size:10.5px;color:var(--t2)}
+ul.chk li::before{content:"▸ ";color:var(--gold3)}
+ul.chk li strong{color:var(--t)}
+
+/* FOOTER */
+footer{background:var(--bg2);border-top:1px solid var(--border);padding:8px 20px;display:flex;justify-content:space-between;font-size:9px;color:var(--t3);align-items:center}
+footer span{color:var(--gold3)}
+
+@media(max-width:900px){
+  .grid{grid-template-columns:1fr 1fr}
+  .grid-6{grid-template-columns:repeat(3,1fr)}
+  .cr{grid-template-columns:80px 50px 50px 50px 1fr}
+  .cr>div:nth-child(6){display:none}
+}
+@media(max-width:560px){
+  .grid,.grid-2,.grid-3,.grid-6{grid-template-columns:1fr}
+  .cr{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div>
+    <div class="hdr-title">GOLD FUTURES — CHEATSHEET</div>
+    <div class="hdr-sub">MCX · COMEX · Cost Structure · OI Signals · Tax · Participants</div>
+  </div>
+  <div class="badges">
+    <span class="b b-g">◆ Research Analyst</span>
+    <span class="b b-b">◆ COMEX Trader</span>
+    <span class="b b-gr">◆ Econ. Professor</span>
+  </div>
+</div>
+
+<!-- ROW 1: CONTRACTS -->
+<div class="sec-lbl">01 — MCX CONTRACT UNIVERSE</div>
+<div style="background:var(--border)">
+  <div class="cr hdr-r">
+    <div>Contract</div><div>Lot Size</div><div>Purity</div><div>Tick Val</div><div>Margin*</div><div>Notes</div>
+  </div>
+  <div style="background:var(--bg2)">
+    <div class="cr" style="border-bottom:1px solid var(--border)">
+      <div class="cn">Gold (1kg)</div><div class="cs">1,000g</div><div>995</div><div style="color:var(--g)">₹100</div><div style="color:var(--o)">~₹90K</div><div style="color:var(--t2);font-size:10px">Physical delivery. Institutional. High value per tick.</div>
+    </div>
+    <div class="cr" style="border-bottom:1px solid var(--border)">
+      <div class="cn">Gold Mini</div><div class="cs">100g</div><div>995</div><div style="color:var(--g)">₹10</div><div style="color:var(--o)">~₹9K</div><div style="color:var(--t2);font-size:10px"><span class="tag tg">Best for retail</span> Cash settled. Most liquid contract.</div>
+    </div>
+    <div class="cr" style="border-bottom:1px solid var(--border)">
+      <div class="cn">Gold Guinea</div><div class="cs">8g</div><div>995</div><div style="color:var(--g)">₹1</div><div style="color:var(--o)">~₹720</div><div style="color:var(--t2);font-size:10px">Poor liquidity. Wide spreads. Not recommended for active trading.</div>
+    </div>
+    <div class="cr">
+      <div class="cn">Gold Petal</div><div class="cs">1g</div><div>999.9</div><div style="color:var(--g)">₹1</div><div style="color:var(--o)">~₹800</div><div style="color:var(--t2);font-size:10px">Highest purity (24K). Good for learning only — high cost % per trade.</div>
+    </div>
+  </div>
+</div>
+<div style="background:var(--bg2);padding:5px 12px;font-size:9px;color:var(--t3);border-bottom:1px solid var(--border)">* Margins change daily. Check MCX margin files or broker before trading. Based on Gold ~₹72,000/10g.</div>
+
+<!-- ROW 2: COMEX + PRICE FORMULA -->
+<div class="sec-lbl">02 — COMEX &amp; PRICE DERIVATION</div>
+<div class="grid grid-2" style="background:var(--border)">
+  <div class="cell">
+    <div class="cell-hdr"><span class="cell-title">COMEX Contracts</span></div>
+    <div style="padding:8px 0">
+      <div class="kv"><span class="kk">GC (Gold Futures)</span><span class="kv-v">100 troy oz · $0.10 tick = $10</span></div>
+      <div class="kv"><span class="kk">MGC (Micro Gold)</span><span class="kv-v">10 troy oz · $0.10 tick = $1</span></div>
+      <div class="kv"><span class="kk">GC Margin</span><span class="kv-v">~$9,000–12,000 per contract</span></div>
+      <div class="kv"><span class="kk">COMEX Trading (IST)</span><span class="kv-v">7:30 AM → 1:30 AM (23hrs)</span></div>
+      <div class="kv"><span class="kk">MCX Hot Window</span><span class="kv-v" style="color:var(--gold)">7:00 PM – 11:30 PM IST</span></div>
+      <div class="kv"><span class="kk">Settlement</span><span class="kv-v">Physical (NY approved vaults)</span></div>
+    </div>
+  </div>
+  <div class="cell">
+    <div class="cell-hdr"><span class="cell-title">MCX Price Formula</span></div>
+    <div class="fml">
+      <span class="fg">MCX/10g</span> = <span class="fgr">COMEX ($/oz)</span><br>
+      &nbsp;&nbsp;&nbsp;× <span class="fgr">USDINR</span> ÷ <span class="fc">31.1035 g/oz</span> × <span class="fc">10</span><br>
+      &nbsp;&nbsp;&nbsp;+ <span class="fr">Import Duty ~6–10%</span><br>
+      &nbsp;&nbsp;&nbsp;+ <span class="fr">GST 3% on import</span><br>
+      &nbsp;&nbsp;&nbsp;+ <span class="fc">Handling premium</span>
+    </div>
+    <div style="font-size:9.5px;color:var(--t2);line-height:1.6">⚡ ₹1 USDINR move ≈ <strong style="color:var(--gold)">₹2,400 P&L</strong> on 1 Gold Mini lot<br>
+    ⚡ $1 COMEX move ≈ <strong style="color:var(--gold)">₹270 P&L</strong> on 1 Gold Mini lot (at ₹84 rate)</div>
+  </div>
+</div>
+
+<!-- ROW 3: COSTS -->
+<div class="sec-lbl">03 — ROUNDTRIP COST PER LOT (Gold ~₹72,000/10g · Discount Broker ₹20/order)</div>
+<div class="grid grid-3" style="background:var(--border)">
+  <div class="cell">
+    <div class="cell-hdr"><span class="cell-title">Gold Petal — 1g · ₹7,200 value</span></div>
+    <div class="cost-r"><div class="c1">CTT (sell only 0.01%)</div><div class="c2">0.01%</div><div class="c3">₹0.72</div></div>
+    <div class="cost-r"><div class="c1">Exchange charges</div><div class="c2">~0.0026%</div><div class="c3">₹0.37</div></div>
+    <div class="cost-r"><div class="c1">Stamp duty (buy)</div><div class="c2">0.002%</div><div class="c3">₹0.14</div></div>
+    <div class="cost-r"><div class="c1">Brokerage ×2</div><div class="c2">flat</div><div class="c3">₹40.00</div></div>
+    <div class="cost-r"><div class="c1">GST 18% on brok.</div><div class="c2">18%</div><div class="c3">₹7.27</div></div>
+    <div class="cost-r total"><div class="c1">Total Roundtrip</div><div class="c2"></div><div class="c3" style="color:var(--r)">~₹49</div></div>
+    <div style="padding:4px 10px;font-size:9px;color:var(--t3)">Break-even: ~₹490/10g (0.7%) — expensive!</div>
+  </div>
+  <div class="cell">
+    <div class="cell-hdr"><span class="cell-title">Gold Mini — 100g · ₹7.2L value</span></div>
+    <div class="cost-r"><div class="c1">CTT (sell only 0.01%)</div><div class="c2">0.01%</div><div class="c3">₹72.00</div></div>
+    <div class="cost-r"><div class="c1">Exchange charges</div><div class="c2">~0.0026%</div><div class="c3">₹37.44</div></div>
+    <div class="cost-r"><div class="c1">Stamp duty (buy)</div><div class="c2">0.002%</div><div class="c3">₹14.40</div></div>
+    <div class="cost-r"><div class="c1">Brokerage ×2</div><div class="c2">flat</div><div class="c3">₹40.00</div></div>
+    <div class="cost-r"><div class="c1">GST 18% on brok.</div><div class="c2">18%</div><div class="c3">₹13.94</div></div>
+    <div class="cost-r total"><div class="c1">Total Roundtrip</div><div class="c2"></div><div class="c3" style="color:var(--g)">~₹179</div></div>
+    <div style="padding:4px 10px;font-size:9px;color:var(--t3)">Break-even: ~₹18/10g (0.025%) — efficient</div>
+  </div>
+  <div class="cell">
+    <div class="cell-hdr"><span class="cell-title">Gold 1kg — 1000g · ₹72L value</span></div>
+    <div class="cost-r"><div class="c1">CTT (sell only 0.01%)</div><div class="c2">0.01%</div><div class="c3">₹720.00</div></div>
+    <div class="cost-r"><div class="c1">Exchange charges</div><div class="c2">~0.0026%</div><div class="c3">₹374.40</div></div>
+    <div class="cost-r"><div class="c1">Stamp duty (buy)</div><div class="c2">0.002%</div><div class="c3">₹144.00</div></div>
+    <div class="cost-r"><div class="c1">Brokerage ×2</div><div class="c2">flat</div><div class="c3">₹40.00</div></div>
+    <div class="cost-r"><div class="c1">GST 18% on brok.</div><div class="c2">18%</div><div class="c3">₹74.59</div></div>
+    <div class="cost-r total"><div class="c1">Total Roundtrip</div><div class="c2"></div><div class="c3" style="color:var(--b)">~₹1,367</div></div>
+    <div style="padding:4px 10px;font-size:9px;color:var(--t3)">Break-even: ~₹14/10g (0.019%) — most efficient</div>
+  </div>
+</div>
+
+<!-- ROW 4: TAX + OI BASICS -->
+<div class="grid grid-2" style="background:var(--border)">
+
+  <!-- TAX -->
+  <div>
+    <div class="sec-lbl">04 — INCOME TAX TREATMENT</div>
+    <div class="cell" style="padding:0">
+      <div class="tx-r hdr-t"><div>Instrument</div><div>Rate</div><div>Type / Notes</div></div>
+      <div class="tx-r"><div class="t1">MCX Gold Futures</div><div class="t2">Slab%</div><div class="t3">Non-speculative business. ITR-3. CF 8 yrs.</div></div>
+      <div class="tx-r"><div class="t1">GOLDBEES ETF &lt;12m</div><div class="t2">20%</div><div class="t3">STCG. Post Jul-2024 budget rate.</div></div>
+      <div class="tx-r"><div class="t1">GOLDBEES ETF &gt;12m</div><div class="t2">12.5%</div><div class="t3">LTCG above ₹1.25L exemption.</div></div>
+      <div class="tx-r"><div class="t1">Physical gold &lt;24m</div><div class="t2">Slab%</div><div class="t3">STCG at income tax rate.</div></div>
+      <div class="tx-r"><div class="t1">Physical gold &gt;24m</div><div class="t2">12.5%</div><div class="t3">LTCG, no indexation (post Jul 2024).</div></div>
+      <div class="tx-r"><div class="t1">SGB (held to 8yr)</div><div class="t2" style="color:var(--g)">0%</div><div class="t3">Fully tax-free. + 2.5% annual interest.</div></div>
+    </div>
+    <div style="background:var(--bg2);padding:6px 12px;font-size:9px;color:var(--t3);border-top:1px solid var(--border)">CTT is NOT TDS. File ITR-3 for futures. Advance tax due: Jun 15, Sep 15, Dec 15, Mar 15.</div>
+  </div>
+
+  <!-- OI BASICS -->
+  <div>
+    <div class="sec-lbl">05 — OPEN INTEREST BASICS</div>
+    <div class="cell">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+        <div style="text-align:center;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:2px">
+          <div style="font-size:9px;color:var(--t2);margin-bottom:4px">New long + New short</div>
+          <div style="font-size:22px;color:var(--g);font-weight:700">+1</div>
+          <div style="font-size:9px;color:var(--t3)">OI rises</div>
+        </div>
+        <div style="text-align:center;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:2px">
+          <div style="font-size:9px;color:var(--t2);margin-bottom:4px">Both sides close</div>
+          <div style="font-size:22px;color:var(--r);font-weight:700">−1</div>
+          <div style="font-size:9px;color:var(--t3)">OI falls</div>
+        </div>
+        <div style="text-align:center;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:2px">
+          <div style="font-size:9px;color:var(--t2);margin-bottom:4px">Transfer of position</div>
+          <div style="font-size:22px;color:var(--t3);font-weight:700">±0</div>
+          <div style="font-size:9px;color:var(--t3)">OI unchanged</div>
+        </div>
+      </div>
+      <div class="kv"><span class="kk">OI vs Volume</span><span class="kv-v">OI = cumulative · Volume = resets daily</span></div>
+      <div class="kv"><span class="kk">Reliable OI data</span><span class="kv-v" style="color:var(--gold)">EOD only — intraday is batched</span></div>
+      <div class="kv"><span class="kk">Rollover window</span><span class="kv-v">5–7 days before expiry</span></div>
+      <div class="kv"><span class="kk">Flat price + rising OI</span><span class="kv-v" style="color:var(--gold)">Silent accumulation — watch closely</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ROW 5: OI SIGNAL MATRIX -->
+<div class="sec-lbl">06 — OI + PRICE SIGNAL MATRIX</div>
+<div class="grid grid-2" style="background:var(--border)">
+  <div class="cell" style="padding:8px">
+    <div class="sig sig-bull">
+      <div class="sig-head"><span class="pip pip-g">PRICE ↑</span><span class="pip pip-g">OI ↑</span><span class="verdict vc-g">STRONG BULL</span></div>
+      <p>Fresh longs entering with conviction. New money backing move. <strong>Trend continuation signal.</strong> Enter on pullbacks.</p>
+    </div>
+    <div class="sig sig-weak">
+      <div class="sig-head"><span class="pip pip-g">PRICE ↑</span><span class="pip pip-r">OI ↓</span><span class="verdict vc-o">SHORT COVER</span></div>
+      <p>Shorts forced to buy back. No new bulls. <strong>Don't chase.</strong> Rally may stall once covering ends.</p>
+    </div>
+  </div>
+  <div class="cell" style="padding:8px">
+    <div class="sig sig-bear">
+      <div class="sig-head"><span class="pip pip-r">PRICE ↓</span><span class="pip pip-g">OI ↑</span><span class="verdict vc-r">STRONG BEAR</span></div>
+      <p>Fresh shorts entering. Bears building with conviction. <strong>Avoid buying dips.</strong> Downtrend has legs.</p>
+    </div>
+    <div class="sig sig-ex">
+      <div class="sig-head"><span class="pip pip-r">PRICE ↓</span><span class="pip pip-r">OI ↓</span><span class="verdict vc-k">EXHAUSTION</span></div>
+      <p>Longs liquidating. No new sellers. Fall losing steam. <strong>Potential reversal zone</strong> — wait for OI to stabilise.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ROW 6: PARTICIPANTS + WHAT MOVES GOLD -->
+<div class="grid grid-2" style="background:var(--border)">
+  <div>
+    <div class="sec-lbl">07 — KEY PARTICIPANTS</div>
+    <div class="cell" style="padding:0">
+      <div class="pt-r hdr-p"><div>Who</div><div>Market</div><div>Typical Behaviour</div></div>
+      <div class="pt-r"><div class="p1">Retail speculators</div><div class="p2"><span class="tag tg">MCX</span></div><div class="p3">Directional. Trend followers. Noise.</div></div>
+      <div class="pt-r"><div class="p1">Large jewellers</div><div class="p2"><span class="tag tb">Both</span></div><div class="p3">Batch hedge weekly. Short on inventory, long on advance orders.</div></div>
+      <div class="pt-r"><div class="p1">Bullion banks</div><div class="p2"><span class="tag tb">Both+LBMA</span></div><div class="p3">Dynamic delta hedge. Algos. Major OI movers. Market makers.</div></div>
+      <div class="pt-r"><div class="p1">Refineries (MMTC-PAMP)</div><div class="p2"><span class="tag tb">Both</span></div><div class="p3">Mostly short. Hedge processing inventory daily.</div></div>
+      <div class="pt-r"><div class="p1">Gold NBFCs (Muthoot)</div><div class="p2"><span class="tag tr">Physical</span></div><div class="p3">Never hedge on MCX. Auction = natural hedge. Watch NPA data.</div></div>
+      <div class="pt-r"><div class="p1">RBI / Central banks</div><div class="p2"><span class="tag tr">OTC only</span></div><div class="p3">Never use exchanges. Buy via bullion banks. Structural accumulator.</div></div>
+      <div class="pt-r"><div class="p1">Hedge funds / FIIs</div><div class="p2"><span class="tag tb">COMEX+MCX</span></div><div class="p3">COT "non-commercial" position. Macro directional. COT extreme = contrarian signal.</div></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="sec-lbl">08 — WHAT ACTUALLY MOVES GOLD (IN ORDER)</div>
+    <div class="cell">
+      <div class="ch-item"><div class="ch-n">1</div><div class="ch-l"><strong style="color:var(--gold)">US Real Interest Rates (TIPS yield)</strong> — strongest driver. Negative real yield = gold surges.</div><div class="ch-r">FRED: DFII10</div></div>
+      <div class="ch-item"><div class="ch-n">2</div><div class="ch-l"><strong style="color:var(--t)">US Dollar Index (DXY)</strong> — ~−0.7 correlation. Dollar up = gold down.</div><div class="ch-r">TradingView</div></div>
+      <div class="ch-item"><div class="ch-n">3</div><div class="ch-l"><strong style="color:var(--t)">Central Bank Buying</strong> — RBI, China, Turkey. Structural bid since 2010.</div><div class="ch-r">gold.org</div></div>
+      <div class="ch-item"><div class="ch-n">4</div><div class="ch-l"><strong style="color:var(--t)">ETF Flows (GLD/IAU)</strong> — Weekly holdings change. Outflow = institutional selling.</div><div class="ch-r">spdrgoldshares.com</div></div>
+      <div class="ch-item"><div class="ch-n">5</div><div class="ch-l"><strong style="color:var(--t)">COT Speculator Positioning</strong> — Extreme net long = contrarian short warning.</div><div class="ch-r">cftc.gov</div></div>
+      <div class="ch-item"><div class="ch-n">6</div><div class="ch-l"><strong style="color:var(--t)">Geopolitics / Risk-off</strong> — Wars, sanctions. Usually temporary unless changes rate outlook.</div><div class="ch-r">—</div></div>
+      <div class="ch-item"><div class="ch-n">7</div><div class="ch-l"><strong style="color:var(--t)">India import duty / USDINR</strong> — India-specific MCX premium driver. Budget risk.</div><div class="ch-r">ibja.co</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ROW 7: WARNINGS + ECOSYSTEM -->
+<div class="grid grid-2" style="background:var(--border)">
+  <div>
+    <div class="sec-lbl">09 — COMMON MISTAKES (DON'T DO THESE)</div>
+    <div class="cell">
+      <div class="warn" style="margin-bottom:4px"><strong>Trading MCX without watching COMEX + USDINR.</strong> You're trading a COMEX derivative with INR translation. Ignoring either is trading blind.</div>
+      <div class="warn" style="margin-bottom:4px"><strong>Holding unhedged overnight before US events.</strong> FOMC/CPI/NFP routinely create ₹500–2,000/10g gaps in minutes. Use GTT stops minimum.</div>
+      <div class="warn" style="margin-bottom:4px"><strong>Trading intraday OI as fact.</strong> Intraday OI is approximated and batched. Only EOD OI is reliable for analysis.</div>
+      <div class="warn" style="margin-bottom:4px"><strong>Not accounting for rollover cost.</strong> Each month you roll MCX = ₹150–400/10g carry cost. GOLDBEES has zero rollover cost.</div>
+      <div class="warn"><strong>Filing ITR-2 for futures income.</strong> Commodity futures = non-speculative business. Must use ITR-3.</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="sec-lbl">10 — INSTRUMENT SELECTION</div>
+    <div class="cell" style="padding:0">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+        <div style="padding:8px 10px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)">
+          <div style="font-size:9px;color:var(--t2);margin-bottom:4px">SHORT TRADE (days)</div>
+          <div style="color:var(--gold);font-weight:700;font-size:12px">MCX Gold Mini</div>
+          <div style="font-size:9px;color:var(--t3)">Best liquidity, lowest cost %</div>
+        </div>
+        <div style="padding:8px 10px;border-bottom:1px solid var(--border)">
+          <div style="font-size:9px;color:var(--t2);margin-bottom:4px">TAX-FREE INVESTMENT</div>
+          <div style="color:var(--g);font-weight:700;font-size:12px">Sovereign Gold Bond</div>
+          <div style="font-size:9px;color:var(--t3)">0% tax at 8yr maturity + 2.5% interest</div>
+        </div>
+        <div style="padding:8px 10px;border-right:1px solid var(--border);border-bottom:1px solid var(--border)">
+          <div style="font-size:9px;color:var(--t2);margin-bottom:4px">LIQUID LONG-TERM</div>
+          <div style="color:var(--b);font-weight:700;font-size:12px">GOLDBEES ETF</div>
+          <div style="font-size:9px;color:var(--t3)">No rollover. Easy exit. Exchange traded.</div>
+        </div>
+        <div style="padding:8px 10px;border-bottom:1px solid var(--border)">
+          <div style="font-size:9px;color:var(--t2);margin-bottom:4px">LEARNING / MICRO</div>
+          <div style="color:var(--o);font-weight:700;font-size:12px">Gold Petal</div>
+          <div style="font-size:9px;color:var(--t3)">Low capital. Not cost-efficient at scale.</div>
+        </div>
+        <div style="padding:8px 10px;border-right:1px solid var(--border)">
+          <div style="font-size:9px;color:var(--t2);margin-bottom:4px">PHYSICAL HOLDING</div>
+          <div style="color:var(--t);font-weight:700;font-size:12px">MMTC-PAMP Bars</div>
+          <div style="font-size:9px;color:var(--t3)">LBMA certified. MCX delivery approved.</div>
+        </div>
+        <div style="padding:8px 10px">
+          <div style="font-size:9px;color:var(--t2);margin-bottom:4px">INSTITUTIONAL HEDGE</div>
+          <div style="color:var(--t);font-weight:700;font-size:12px">MCX Gold 1kg / OTC</div>
+          <div style="font-size:9px;color:var(--t3)">Delivery option. COMEX arb.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ROW 8: WATCH LIST + ECOSYSTEM -->
+<div class="grid grid-2" style="background:var(--border)">
+  <div>
+    <div class="sec-lbl">11 — DAILY WATCH LIST (CHECK THESE)</div>
+    <div class="cell">
+      <div class="kv"><span class="kk" style="color:var(--gold)">COMEX GC Price</span><span class="kv-v">Primary global driver — always first</span></div>
+      <div class="kv"><span class="kk" style="color:var(--gold)">USDINR Spot</span><span class="kv-v">₹1 move = ~₹2,400 on Gold Mini</span></div>
+      <div class="kv"><span class="kk">US 10Y Real Yield</span><span class="kv-v">fred.stlouisfed.org/series/DFII10</span></div>
+      <div class="kv"><span class="kk">DXY Dollar Index</span><span class="kv-v">Inverse correlation ~−0.7 with gold</span></div>
+      <div class="kv"><span class="kk">IBJA Evening Rate</span><span class="kv-v">India physical demand signal · ibja.co</span></div>
+      <div class="kv"><span class="kk">MCX EOD OI Change</span><span class="kv-v">vs previous day · mcxindia.com</span></div>
+      <div class="kv" style="border-bottom:none"><span class="kk">COT Report (Fri)</span><span class="kv-v">Speculator positioning · cftc.gov</span></div>
+    </div>
+  </div>
+  <div>
+    <div class="sec-lbl">12 — GOLD MARKET HIERARCHY</div>
+    <div class="cell">
+      <div class="ch-item"><div class="ch-n" style="color:var(--gold)">1</div><div class="ch-l"><strong>LBMA OTC London</strong> — Global anchor. AM/PM fix. $50–130B/day.</div><div class="ch-r" style="color:var(--gold)">Primary</div></div>
+      <div class="ch-item"><div class="ch-n" style="color:var(--gold)">2</div><div class="ch-l"><strong>COMEX (New York)</strong> — Electronic 23hrs. Price discovery for futures globally.</div><div class="ch-r">Derived</div></div>
+      <div class="ch-item"><div class="ch-n" style="color:var(--t2)">3</div><div class="ch-l"><strong>Shanghai Gold Exchange (SGE)</strong> — Physical demand signal from China.</div><div class="ch-r">Derived</div></div>
+      <div class="ch-item"><div class="ch-n" style="color:var(--t2)">4</div><div class="ch-l"><strong>IBJA (India)</strong> — Physical reference. COMEX + import duty + INR.</div><div class="ch-r">India ref</div></div>
+      <div class="ch-item"><div class="ch-n" style="color:var(--t3)">5</div><div class="ch-l"><strong>MCX Futures</strong> — India futures. COMEX-derived. Our trading layer.</div><div class="ch-r">Our market</div></div>
+      <div class="ch-item"><div class="ch-n" style="color:var(--t3)">6</div><div class="ch-l"><strong>Retail Jewellery</strong> — IBJA + making charges (5% GST) + retailer margin.</div><div class="ch-r">Consumer</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ROW 9: ECONOMIC THEORY QUICK HITS -->
+<div class="sec-lbl">13 — ECONOMIC THEORY QUICK REFERENCE</div>
+<div class="grid grid-3" style="background:var(--border)">
+  <div class="cell">
+    <div style="font-size:9px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Real Yield Rule</div>
+    <ul class="chk">
+      <li><strong>Real yield = Nominal rate − Inflation</strong></li>
+      <li>Negative real yield → <strong style="color:var(--g)">Gold thrives</strong></li>
+      <li>Positive &amp; rising real yield → <strong style="color:var(--r)">Gold struggles</strong></li>
+      <li>2020–21: Real yield −1% → Gold $2,075 ATH</li>
+      <li>2022: Fed hikes → Real yield +2% → Gold underperformed</li>
+      <li>2023–24: Gold broke pattern — central bank buying overrode rates</li>
+    </ul>
+  </div>
+  <div class="cell">
+    <div style="font-size:9px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Gold Standard History</div>
+    <ul class="chk">
+      <li><strong>1870–1914:</strong> Classical Gold Standard</li>
+      <li><strong>1944–1971:</strong> Bretton Woods — USD = $35/oz</li>
+      <li><strong>Aug 15, 1971:</strong> Nixon ends convertibility</li>
+      <li>Gold: $35 → $800 in 8 years after Nixon Shock</li>
+      <li>Post-1971: Gold = <strong>confidence in fiat currencies</strong></li>
+      <li>Gold at $2,500 = dollar lost ~98% vs gold since 1971</li>
+    </ul>
+  </div>
+  <div class="cell">
+    <div style="font-size:9px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">Stock-to-Flow + De-dollarisation</div>
+    <ul class="chk">
+      <li><strong>Gold SF ratio ~58</strong> (years of supply = existing stock)</li>
+      <li>High SF = price insensitive to supply shocks</li>
+      <li>Russia: doubled gold reserves post-2014 sanctions</li>
+      <li>China: reducing UST, buying gold</li>
+      <li>India: repatriated gold from Bank of England 2024</li>
+      <li><strong>De-dollarisation trade = structural gold bid</strong></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ROW 10: KEY LINKS -->
+<div class="sec-lbl">14 — ESSENTIAL LINKS</div>
+<div class="grid grid-6" style="background:var(--border)">
+  <div class="cell" style="padding:8px 10px">
+    <div style="font-size:9px;color:var(--gold3);margin-bottom:4px">MCX Exchange</div>
+    <div style="font-size:10px;color:var(--t)">mcxindia.com</div>
+    <div style="font-size:9px;color:var(--t3)">Specs, OI, margins</div>
+  </div>
+  <div class="cell" style="padding:8px 10px">
+    <div style="font-size:9px;color:var(--gold3);margin-bottom:4px">COMEX (CME)</div>
+    <div style="font-size:10px;color:var(--t)">cmegroup.com</div>
+    <div style="font-size:9px;color:var(--t3)">GC specs, options</div>
+  </div>
+  <div class="cell" style="padding:8px 10px">
+    <div style="font-size:9px;color:var(--gold3);margin-bottom:4px">Real Yield</div>
+    <div style="font-size:10px;color:var(--t)">fred.stlouisfed.org</div>
+    <div style="font-size:9px;color:var(--t3)">Series: DFII10</div>
+  </div>
+  <div class="cell" style="padding:8px 10px">
+    <div style="font-size:9px;color:var(--gold3);margin-bottom:4px">COT Report</div>
+    <div style="font-size:10px;color:var(--t)">cftc.gov/COT</div>
+    <div style="font-size:9px;color:var(--t3)">Every Friday</div>
+  </div>
+  <div class="cell" style="padding:8px 10px">
+    <div style="font-size:9px;color:var(--gold3);margin-bottom:4px">India Rate</div>
+    <div style="font-size:10px;color:var(--t)">ibja.co</div>
+    <div style="font-size:9px;color:var(--t3)">Morning/Evening fix</div>
+  </div>
+  <div class="cell" style="padding:8px 10px">
+    <div style="font-size:9px;color:var(--gold3);margin-bottom:4px">WGC Data</div>
+    <div style="font-size:10px;color:var(--t)">gold.org</div>
+    <div style="font-size:9px;color:var(--t3)">Demand/supply stats</div>
+  </div>
+  <div class="cell" style="padding:8px 10px">
+    <div style="font-size:9px;color:var(--gold3);margin-bottom:4px">GLD Holdings</div>
+    <div style="font-size:10px;color:var(--t)">spdrgoldshares.com</div>
+    <div style="font-size:9px;color:var(--t3)">ETF flow signal</div>
+  </div>
+  <div class="cell" style="padding:8px 10px">
+    <div style="font-size:9px;color:var(--gold3);margin-bottom:4px">LBMA Fix</div>
+    <div style="font-size:10px;color:var(--t)">lbma.org.uk</div>
+    <div style="font-size:9px;color:var(--t3)">Global benchmark</div>
+  </div>
+  <div class="cell" style="padding:8px 10px">
+    <div style="font-size:9px;color:var(--gold3);margin-bottom:4px">Charts</div>
+    <div style="font-size:10px;color:var(--t)">tradingview.com</div>
+    <div style="font-size:9px;color:var(--t3)">COMEX+MCX+USDINR</div>
+  </div>
+  <div class="cell" style="padding:8px 10px">
+    <div style="font-size:9px;color:var(--gold3);margin-bottom:4px">SEBI</div>
+    <div style="font-size:10px;color:var(--t)">sebi.gov.in</div>
+    <div style="font-size:9px;color:var(--t3)">Commodity rules</div>
+  </div>
+  <div class="cell" style="padding:8px 10px">
+    <div style="font-size:9px;color:var(--gold3);margin-bottom:4px">MMTC-PAMP</div>
+    <div style="font-size:10px;color:var(--t)">mmtcpamp.com</div>
+    <div style="font-size:9px;color:var(--t3)">India refinery</div>
+  </div>
+  <div class="cell" style="padding:8px 10px">
+    <div style="font-size:9px;color:var(--gold3);margin-bottom:4px">Gold News</div>
+    <div style="font-size:10px;color:var(--t)">kitco.com</div>
+    <div style="font-size:9px;color:var(--t3)">Analysis + live price</div>
+  </div>
+</div>
+
+<footer>
+  <span>GOLD FUTURES CHEATSHEET</span>
+  <span style="color:var(--t3)">MCX · COMEX · LBMA · Indian Tax · For personal reference only. Verify all data before trading.</span>
+  <span id="fdate"></span>
+</footer>
+
+<script>
+document.getElementById('fdate').textContent = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+</script>
+</body>
+</html>
