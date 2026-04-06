@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Futures Order Types — Trading Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@300..700&display=swap" rel="stylesheet">
+<style>
+:root,[data-theme="light"]{
+  --color-bg:#f7f6f2;--color-surface:#f9f8f5;--color-surface-2:#fbfbf9;
+  --color-surface-offset:#f3f0ec;--color-border:#d4d1ca;--color-divider:#dcd9d5;
+  --color-text:#28251d;--color-text-muted:#7a7974;--color-text-faint:#bab9b4;
+  --color-primary:#01696f;--color-primary-hover:#0c4e54;--color-primary-highlight:#cedcd8;
+  --color-success:#437a22;--color-success-highlight:#d4dfcc;
+  --color-error:#a12c7b;--color-error-highlight:#e0ced7;
+  --color-warning:#964219;--color-warning-highlight:#ddcfc6;
+  --color-gold:#d19900;--color-gold-highlight:#e9e0c6;
+  --color-blue:#006494;--color-blue-highlight:#c6d8e4;
+  --color-orange:#da7101;--color-orange-highlight:#e7d7c4;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.06);--shadow-md:0 4px 12px rgba(0,0,0,0.08);
+  --radius-sm:0.375rem;--radius-md:0.5rem;--radius-lg:0.75rem;--radius-xl:1rem;
+  --text-xs:clamp(0.75rem,0.7rem + 0.25vw,0.875rem);
+  --text-sm:clamp(0.875rem,0.8rem + 0.35vw,1rem);
+  --text-base:clamp(1rem,0.95rem + 0.25vw,1.125rem);
+  --text-lg:clamp(1.125rem,1rem + 0.75vw,1.5rem);
+  --text-xl:clamp(1.5rem,1.2rem + 1.25vw,2.25rem);
+  --space-1:.25rem;--space-2:.5rem;--space-3:.75rem;--space-4:1rem;
+  --space-5:1.25rem;--space-6:1.5rem;--space-8:2rem;--space-10:2.5rem;--space-12:3rem;
+  --transition:180ms cubic-bezier(0.16,1,0.3,1);
+}
+[data-theme="dark"]{
+  --color-bg:#171614;--color-surface:#1c1b19;--color-surface-2:#201f1d;
+  --color-surface-offset:#1d1c1a;--color-border:#393836;--color-divider:#262523;
+  --color-text:#cdccca;--color-text-muted:#797876;--color-text-faint:#5a5957;
+  --color-primary:#4f98a3;--color-primary-hover:#227f8b;--color-primary-highlight:#313b3b;
+  --color-success:#6daa45;--color-success-highlight:#3a4435;
+  --color-error:#d163a7;--color-error-highlight:#4c3d46;
+  --color-warning:#bb653b;--color-warning-highlight:#564942;
+  --color-gold:#e8af34;--color-gold-highlight:#4d4332;
+  --color-blue:#5591c7;--color-blue-highlight:#3a4550;
+  --color-orange:#fdab43;--color-orange-highlight:#564b3e;
+  --shadow-sm:0 1px 2px rgba(0,0,0,0.2);--shadow-md:0 4px 12px rgba(0,0,0,0.3);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;scroll-behavior:smooth;}
+body{min-height:100vh;font-family:'Inter',sans-serif;font-size:var(--text-base);color:var(--color-text);background:var(--color-bg);line-height:1.6;}
+button{cursor:pointer;background:none;border:none;font:inherit;color:inherit;}
+table{border-collapse:collapse;width:100%;}
+a,button{transition:color var(--transition),background var(--transition),border-color var(--transition);}
+.page{max-width:1200px;margin-inline:auto;padding:var(--space-8) var(--space-6);}
+header{background:var(--color-surface);border-bottom:1px solid var(--color-border);padding:var(--space-4) var(--space-6);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm);}
+.logo{display:flex;align-items:center;gap:var(--space-3);}
+.logo-text{font-size:var(--text-sm);font-weight:700;letter-spacing:-0.02em;}
+.logo-sub{font-size:var(--text-xs);color:var(--color-text-muted);}
+.theme-toggle{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-md);border:1px solid var(--color-border);color:var(--color-text-muted);}
+.theme-toggle:hover{background:var(--color-surface-offset);color:var(--color-text);}
+.hero{padding:var(--space-12) 0 var(--space-8);border-bottom:1px solid var(--color-divider);margin-bottom:var(--space-10);}
+.hero h1{font-size:var(--text-xl);font-weight:700;letter-spacing:-0.03em;line-height:1.15;margin-bottom:var(--space-3);}
+.hero p{font-size:var(--text-base);color:var(--color-text-muted);max-width:60ch;}
+.hero-meta{display:flex;gap:var(--space-3);margin-top:var(--space-5);flex-wrap:wrap;}
+.badge{display:inline-flex;align-items:center;font-size:var(--text-xs);font-weight:600;padding:3px 10px;border-radius:9999px;}
+.badge-primary{background:var(--color-primary-highlight);color:var(--color-primary);}
+.badge-gold{background:var(--color-gold-highlight);color:var(--color-gold);}
+.badge-blue{background:var(--color-blue-highlight);color:var(--color-blue);}
+.badge-warn{background:var(--color-warning-highlight);color:var(--color-warning);}
+.section{margin-bottom:var(--space-12);}
+.section-title{font-size:var(--text-lg);font-weight:700;letter-spacing:-0.02em;margin-bottom:var(--space-2);}
+.section-desc{font-size:var(--text-sm);color:var(--color-text-muted);margin-bottom:var(--space-6);max-width:70ch;}
+.table-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--color-border);box-shadow:var(--shadow-sm);}
+thead{background:var(--color-surface-offset);}
+thead th{padding:var(--space-3) var(--space-4);text-align:left;font-size:11px;font-weight:600;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.07em;white-space:nowrap;border-bottom:1px solid var(--color-border);}
+tbody tr{border-bottom:1px solid var(--color-divider);transition:background var(--transition);}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--color-surface-offset);}
+tbody td{padding:var(--space-3) var(--space-4);vertical-align:top;font-size:var(--text-xs);}
+.order-name{font-weight:600;white-space:nowrap;}
+.mono{font-family:'JetBrains Mono',monospace;color:var(--color-primary);}
+.muted{color:var(--color-text-muted);}
+.tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:9999px;white-space:nowrap;}
+.tag-green{background:var(--color-success-highlight);color:var(--color-success);}
+.tag-red{background:var(--color-error-highlight);color:var(--color-error);}
+.tag-orange{background:var(--color-warning-highlight);color:var(--color-warning);}
+.tag-gold{background:var(--color-gold-highlight);color:var(--color-gold);}
+.tag-blue{background:var(--color-blue-highlight);color:var(--color-blue);}
+.tag-primary{background:var(--color-primary-highlight);color:var(--color-primary);}
+.flow-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:var(--space-4);}
+.flow-card{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-5);box-shadow:var(--shadow-sm);}
+.flow-step{display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-3);}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--color-primary-highlight);color:var(--color-primary);font-size:var(--text-xs);font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-label{font-size:var(--text-xs);font-weight:600;color:var(--color-primary);}
+.flow-card h3{font-size:var(--text-sm);font-weight:700;margin-bottom:var(--space-2);}
+.flow-card p{font-size:var(--text-xs);color:var(--color-text-muted);line-height:1.5;}
+.flow-price{font-family:'JetBrains Mono',monospace;font-size:var(--text-xs);color:var(--color-gold);margin-top:var(--space-2);}
+.algo-box{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:var(--space-6);margin-top:var(--space-6);}
+.algo-box h3{font-size:var(--text-sm);font-weight:700;margin-bottom:var(--space-3);}
+pre{background:var(--color-surface-offset);border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:var(--space-4);overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;color:var(--color-text);}
+.kw{color:var(--color-primary);}
+.cm{color:var(--color-text-faint);}
+.num{color:var(--color-gold);}
+hr{border:none;border-top:1px solid var(--color-divider);margin:var(--space-10) 0;}
+footer{border-top:1px solid var(--color-divider);padding:var(--space-6);text-align:center;font-size:var(--text-xs);color:var(--color-text-faint);}
+@media(max-width:600px){.page{padding:var(--space-5) var(--space-4);}header{padding:var(--space-3) var(--space-4);}.hero{padding:var(--space-8) 0 var(--space-6);}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-label="Logo">
+      <rect width="32" height="32" rx="8" fill="var(--color-primary)" opacity="0.15"/>
+      <polyline points="4,24 10,16 16,19 22,10 28,14" stroke="var(--color-primary)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="22" cy="10" r="2.5" fill="var(--color-gold)"/>
+      <line x1="22" y1="10" x2="22" y2="26" stroke="var(--color-gold)" stroke-width="1.5" stroke-dasharray="2 2" opacity="0.6"/>
+      <line x1="16" y1="6" x2="16" y2="26" stroke="var(--color-error)" stroke-width="1.5" stroke-dasharray="2 2" opacity="0.6"/>
+    </svg>
+    <div>
+      <div class="logo-text">Futures Order Types</div>
+      <div class="logo-sub">Trading Reference Guide</div>
+    </div>
+  </div>
+  <button class="theme-toggle" data-theme-toggle aria-label="Toggle theme">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+</header>
+
+<div class="page">
+
+  <div class="hero">
+    <h1>All Order Types — Futures Reference</h1>
+    <p>A complete guide to every order type in Indian futures trading with ₹100 entry examples. Covers Market, Limit, SL-Limit, Trailing Stop, Bracket, Cover, SUPER Orders, and the two-stage trailing algo concept.</p>
+    <div class="hero-meta">
+      <span class="badge badge-primary">Entry ₹100</span>
+      <span class="badge badge-gold">Stop Loss ₹90</span>
+      <span class="badge badge-blue">Target ₹130</span>
+      <span class="badge badge-warn">Trail Jump ₹10</span>
+    </div>
+  </div>
+
+  <!-- Section 1 -->
+  <div class="section">
+    <div class="section-title">All Order Types at a Glance</div>
+    <div class="section-desc">Futures contract long entry at ₹100. Stop-loss at ₹90, Target at ₹130. Execution is not guaranteed when using limit-based stops on gap moves.</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Order Type</th><th>How You Place It</th><th>Entry Condition</th>
+            <th>Execution Price</th><th>Stop Loss</th><th>Target</th><th>Gap-Down Risk</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="order-name">Market Order</td>
+            <td class="muted">Hit Buy immediately</td>
+            <td class="muted">Immediate</td>
+            <td class="mono">₹99–₹101 <span class="tag tag-orange">varies</span></td>
+            <td class="muted">Not set</td><td class="muted">Not set</td>
+            <td><span class="tag tag-red">Fills at any price — no control</span></td>
+          </tr>
+          <tr>
+            <td class="order-name">Limit Order</td>
+            <td class="muted">Buy at ₹100</td>
+            <td class="muted">Price ≤ ₹100</td>
+            <td class="mono">₹100 or better</td>
+            <td class="muted">Not set</td><td class="muted">Not set</td>
+            <td><span class="tag tag-gold">Stays pending if price never hits</span></td>
+          </tr>
+          <tr>
+            <td class="order-name">SL-Market (SLM)</td>
+            <td class="muted">Trigger ₹90 only</td>
+            <td class="muted">Price falls to ₹90</td>
+            <td class="mono">Market ~₹87–89</td>
+            <td class="mono">₹90 trigger</td><td class="muted">Not set</td>
+            <td><span class="tag tag-red">No floor — always fills but slippage risk</span></td>
+          </tr>
+          <tr>
+            <td class="order-name">SL-Limit</td>
+            <td class="muted">Trigger ₹90, Limit ₹88</td>
+            <td class="muted">Price falls to ₹90</td>
+            <td class="mono">₹88 or better</td>
+            <td class="mono">₹90 trigger / ₹88 floor</td><td class="muted">Not set</td>
+            <td><span class="tag tag-orange">May not fill if price gaps below ₹88</span></td>
+          </tr>
+          <tr>
+            <td class="order-name">Bracket Order</td>
+            <td class="muted">Entry + SL + Target together</td>
+            <td class="muted">Immediately at ₹100</td>
+            <td class="mono">₹100</td>
+            <td class="mono">₹90 auto</td><td class="mono">₹130 auto</td>
+            <td><span class="tag tag-green">Both legs placed — whichever hits first cancels other</span></td>
+          </tr>
+          <tr>
+            <td class="order-name">Cover Order</td>
+            <td class="muted">Entry + mandatory SL</td>
+            <td class="muted">Immediately at ₹100</td>
+            <td class="mono">₹100</td>
+            <td class="mono">₹90 mandatory</td><td class="muted">Not set</td>
+            <td><span class="tag tag-blue">Lower margin required; SL cannot be removed</span></td>
+          </tr>
+          <tr>
+            <td class="order-name">Trailing Stop Loss</td>
+            <td class="muted">Entry ₹100, Trail gap ₹10</td>
+            <td class="muted">Immediately at ₹100</td>
+            <td class="mono">₹100</td>
+            <td class="mono">₹90 → moves up as price rises</td><td class="muted">Not set</td>
+            <td><span class="tag tag-green">Locks in profit automatically</span></td>
+          </tr>
+          <tr>
+            <td class="order-name">GTT Order</td>
+            <td class="muted">Set trigger for entry</td>
+            <td class="muted">When price hits ₹100</td>
+            <td class="mono">₹100</td>
+            <td class="muted">Set separately</td><td class="muted">Set separately</td>
+            <td><span class="tag tag-blue">Survives across multiple sessions</span></td>
+          </tr>
+          <tr>
+            <td class="order-name">SUPER Order (Dhan)</td>
+            <td class="muted">Trigger + Limit + SL + Target + Trail Jump</td>
+            <td class="muted">When trigger price is hit</td>
+            <td class="mono">Limit price ₹100</td>
+            <td class="mono">₹90 + Trail Jump ₹10</td><td class="mono">₹130 auto</td>
+            <td><span class="tag tag-primary">Hidden on Dhan server until triggered</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Section 2 -->
+  <div class="section">
+    <div class="section-title">Trailing Stop Price Movement (Trail Jump = ₹10)</div>
+    <div class="section-desc">Long entered at ₹100. SL starts at ₹90 and auto-shifts up every ₹10 rise. SL never moves down — only locks in more profit.</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Price Reaches</th><th>Trail SL Moves To</th><th>Min Profit Locked</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">₹100 (Entry)</td><td class="mono">₹90</td><td class="muted">—</td><td><span class="tag tag-blue">Position Open</span></td></tr>
+          <tr><td class="mono">₹110</td><td class="mono">₹100</td><td class="mono" style="color:var(--color-success)">₹0 (breakeven safe)</td><td><span class="tag tag-green">Capital Protected</span></td></tr>
+          <tr><td class="mono">₹120</td><td class="mono">₹110</td><td class="mono" style="color:var(--color-success)">₹10</td><td><span class="tag tag-green">Profit Locked</span></td></tr>
+          <tr><td class="mono">₹130 (Target)</td><td class="mono">₹120</td><td class="mono" style="color:var(--color-success)">₹20</td><td><span class="tag tag-gold">Target hit → exits in Bracket/SUPER</span></td></tr>
+          <tr><td class="mono">₹140</td><td class="mono">₹130</td><td class="mono" style="color:var(--color-success)">₹30</td><td><span class="tag tag-green">Bonus territory</span></td></tr>
+          <tr><td class="mono">₹150</td><td class="mono">₹140</td><td class="mono" style="color:var(--color-success)">₹40</td><td><span class="tag tag-green">Extended rally captured</span></td></tr>
+          <tr><td class="mono">Reverses → ₹140</td><td class="mono">₹140 (frozen)</td><td class="mono" style="color:var(--color-success)">₹40 profit</td><td><span class="tag tag-red">SL fires → Exit ₹140</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Section 3 -->
+  <div class="section">
+    <div class="section-title">Dhan SUPER Order — Full Lifecycle</div>
+    <div class="section-desc">Where your order lives at each stage, who can see it, and what fires at each price level.</div>
+    <div class="flow-grid">
+      <div class="flow-card">
+        <div class="flow-step"><div class="step-num">1</div><div class="step-label">Order Placed</div></div>
+        <h3>Hidden on Dhan's Server</h3>
+        <p>Entry trigger, target, and SL live only on Dhan's servers. NSE has zero knowledge. Nobody in the market can see anything.</p>
+        <div class="flow-price">Trigger: ₹149,732 → Invisible to NSE</div>
+      </div>
+      <div class="flow-card">
+        <div class="flow-step"><div class="step-num">2</div><div class="step-label">Trigger Hit</div></div>
+        <h3>Sent to NSE Exchange</h3>
+        <p>Dhan pushes the sell limit order to NSE. Now live and visible in the public order book to every trader and algorithm.</p>
+        <div class="flow-price">Limit: ₹149,517 → Sent to NSE</div>
+      </div>
+      <div class="flow-card">
+        <div class="flow-step"><div class="step-num">3</div><div class="step-label">Entry Executes</div></div>
+        <h3>Position Open</h3>
+        <p>Limit fills. Position is live. Dhan activates the next leg — target and SL wait on Dhan's server for their triggers.</p>
+        <div class="flow-price">SL: ₹153,540 → Hidden again</div>
+      </div>
+      <div class="flow-card">
+        <div class="flow-step"><div class="step-num">4</div><div class="step-label">Trail Jump Active</div></div>
+        <h3>Trailing Stop Engages</h3>
+        <p>Every ₹10 price move in your favour shifts SL by ₹10. SL never moves against you. Reversal by trail gap fires exit.</p>
+        <div class="flow-price" style="color:var(--color-gold)">Trail = ₹10 per step</div>
+      </div>
+      <div class="flow-card">
+        <div class="flow-step"><div class="step-num">5</div><div class="step-label">SL Triggered</div></div>
+        <h3>Stop-Loss Fires</h3>
+        <p>Market moves against position. SL trigger hit, Dhan sends the SL limit order to NSE. Visible on exchange — but the market is already at that price.</p>
+        <div class="flow-price" style="color:var(--color-error)">SL Limit sent → Exit position</div>
+      </div>
+      <div class="flow-card" style="border-color:var(--color-success)">
+        <div class="flow-step"><div class="step-num" style="background:var(--color-success-highlight);color:var(--color-success)">✓</div><div class="step-label" style="color:var(--color-success)">Target Hit</div></div>
+        <h3>Position Closed — Profit Taken</h3>
+        <p>Target order executes. Dhan automatically cancels the open SL leg. Trade complete — no manual action needed.</p>
+        <div class="flow-price" style="color:var(--color-success)">Target: ₹130 → +₹30 profit</div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- Section 4 -->
+  <div class="section">
+    <div class="section-title">Order Visibility — Who Sees What?</div>
+    <div class="section-desc">When and where your orders are visible determines your exposure to stop hunting by institutional traders and algorithms.</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Order Stage</th><th>Where Does It Live?</th><th>Visible in Market Depth?</th><th>Practical Risk</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="order-name">Plain Limit Order (no trigger)</td>
+            <td class="muted">NSE Order Book — immediately on placement</td>
+            <td><span class="tag tag-red">YES — fully visible</span></td>
+            <td class="muted">Price, quantity, and intent visible to all traders and bots</td>
+          </tr>
+          <tr>
+            <td class="order-name">SL-Limit / SL-Market</td>
+            <td class="muted">NSE Stop-Loss Book (separate from regular depth)</td>
+            <td><span class="tag tag-gold">Partially hidden</span></td>
+            <td class="muted">Not in regular depth, but price level predictable from chart structure</td>
+          </tr>
+          <tr>
+            <td class="order-name">SUPER Order (pre-trigger)</td>
+            <td class="muted">Dhan's internal server only</td>
+            <td><span class="tag tag-green">NO — completely invisible</span></td>
+            <td class="muted">NSE has zero knowledge. No market participant can see it</td>
+          </tr>
+          <tr>
+            <td class="order-name">SUPER Order (post-SL trigger)</td>
+            <td class="muted">NSE Exchange — active</td>
+            <td><span class="tag tag-orange">YES — visible once triggered</span></td>
+            <td class="muted">Fires at current price — no time for exploitation. Low risk</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Section 5 -->
+  <div class="section">
+    <div class="section-title">Two-Stage Trailing Stop (Advanced Algo Concept)</div>
+    <div class="section-desc">Your idea: loose ₹10 trail before the target, switch to tight ₹5 trail beyond the target to catch extended rallies. No retail UI supports this — requires Dhan API / Python algo.</div>
+    <div class="algo-box">
+      <h3>Python Pseudocode — Two-Stage Trailing via Dhan API</h3>
+<pre><span class="cm"># Entry: ₹100 | Target: ₹130 | Initial SL: ₹90
+# Phase 1: ₹10 trail until price exceeds target
+# Phase 2: ₹5 trail beyond target — catches extended rally</span>
+
+entry_price   = <span class="num">100</span>
+target_price  = <span class="num">130</span>
+current_sl    = <span class="num">90</span>
+highest_price = entry_price
+
+<span class="kw">while</span> position_is_open:
+    current_price = get_ltp()
+
+    <span class="kw">if</span> current_price > highest_price:
+        highest_price = current_price
+
+        <span class="kw">if</span> current_price <= target_price:
+            trail_gap = <span class="num">10</span>   <span class="cm"># Phase 1 — loose trail</span>
+        <span class="kw">else</span>:
+            trail_gap = <span class="num">5</span>    <span class="cm"># Phase 2 — tight trail beyond target</span>
+
+        new_sl = highest_price - trail_gap
+
+        <span class="kw">if</span> new_sl > current_sl:
+            current_sl = new_sl
+            update_stop_loss(current_sl)  <span class="cm"># Dhan API call</span>
+
+    <span class="kw">if</span> current_price <= current_sl:
+        exit_position()   <span class="cm"># Market order exit</span>
+        <span class="kw">break</span></pre>
+    </div>
+    <div class="table-wrap" style="margin-top:var(--space-6)">
+      <table>
+        <thead>
+          <tr><th>Price Level</th><th>Trail Gap</th><th>Trailing SL</th><th>Phase</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="mono">₹100 (Entry)</td><td class="muted">—</td><td class="mono">₹90</td><td><span class="tag tag-blue">Position Open</span></td></tr>
+          <tr><td class="mono">₹110</td><td class="mono">₹10 (Phase 1)</td><td class="mono">₹100</td><td><span class="tag tag-blue">Normal Trail</span></td></tr>
+          <tr><td class="mono">₹120</td><td class="mono">₹10 (Phase 1)</td><td class="mono">₹110</td><td><span class="tag tag-blue">Normal Trail</span></td></tr>
+          <tr><td class="mono">₹130 (Target)</td><td class="mono">₹10 (Phase 1)</td><td class="mono">₹120</td><td><span class="tag tag-gold">Target crossed — phase switches</span></td></tr>
+          <tr><td class="mono">₹140</td><td class="mono">₹5 (Phase 2)</td><td class="mono">₹135</td><td><span class="tag tag-green">Tight trail — rally captured</span></td></tr>
+          <tr><td class="mono">₹150</td><td class="mono">₹5 (Phase 2)</td><td class="mono">₹145</td><td><span class="tag tag-green">₹45 locked in minimum</span></td></tr>
+          <tr><td class="mono">Falls to ₹145</td><td class="muted">—</td><td class="mono">₹145 fires</td><td><span class="tag tag-red">Exit — ₹45 profit captured</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Section 6 -->
+  <div class="section">
+    <div class="section-title">Which Order Type to Use?</div>
+    <div class="section-desc">Quick decision guide based on your specific trading goal.</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Your Goal</th><th>Best Order Type</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="muted">Guaranteed exit no matter what</td><td class="order-name">SL-Market (SLM)</td><td class="muted">No limit floor — always fills, accept slippage</td></tr>
+          <tr><td class="muted">Control worst-case exit price</td><td class="order-name">SL-Limit</td><td class="muted">Floor price set, but risk of no fill on fast gaps</td></tr>
+          <tr><td class="muted">Ride a trending market without watching</td><td class="order-name">Trailing Stop Loss</td><td class="muted">Auto-locks in profit as price extends in your favour</td></tr>
+          <tr><td class="muted">Automated entry + SL + target</td><td class="order-name">Bracket Order</td><td class="muted">All three legs placed together — no manual management</td></tr>
+          <tr><td class="muted">Stealth SL + trail + target hidden from exchange</td><td class="order-name">SUPER Order (Dhan)</td><td class="muted">Sits on Dhan server until triggered — completely invisible to NSE</td></tr>
+          <tr><td class="muted">Conditional entry across sessions</td><td class="order-name">GTT Order</td><td class="muted">Survives overnight — ideal for swing trade entries</td></tr>
+          <tr><td class="muted">Tight trail only beyond target (your "leading jump")</td><td class="order-name">Algo / Dhan API</td><td class="muted">No retail UI — Python code with conditional two-stage trail logic</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>Futures Order Types Reference &nbsp;·&nbsp; Indian F&amp;O Markets &nbsp;·&nbsp; For educational use only &nbsp;·&nbsp; Execution is not guaranteed</p>
+</footer>
+
+<script>
+(function(){
+  var t=document.querySelector('[data-theme-toggle]');
+  var r=document.documentElement;
+  var d=r.getAttribute('data-theme')||'dark';
+  function setTheme(theme){
+    d=theme;r.setAttribute('data-theme',d);
+    if(t)t.innerHTML=d==='dark'
+      ?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+      :'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  }
+  setTheme(d);
+  if(t)t.addEventListener('click',function(){setTheme(d==='dark'?'light':'dark');});
+})();
+</script>
+</body>
+</html>
