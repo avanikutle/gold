@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>All Futures Order Types — Complete Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#090d13;
+  --panel:#0f1620;
+  --panel2:#141d2e;
+  --line:#243450;
+  --linebr:#2e4a70;
+  --gold:#ffd040;
+  --txt:#f5ead0;
+  --dim:#a0bcd8;
+  --dD:#60d0ff;
+  --dI:#f060e0;
+  --sky:#55d8ff;
+  --rose:#ff9090;
+  --lav:#d0a8ff;
+  --teal:#40f8c8;
+  --org:#ffaa50;
+  --grn:#98f048;
+  --div:#1c3050;
+  --lbl:#c0d8f0;
+  --note:#90c0e8;
+  --red:#ff5566;
+  --amber:#ffcc44;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Rajdhani',sans-serif;font-size:16px;line-height:1.5;min-height:100vh}
+
+/* ── HEADER ── */
+.hdr{background:linear-gradient(135deg,#0a1525 0%,#0d1e36 60%,#111828 100%);border-bottom:2px solid var(--linebr);padding:36px 40px 28px;position:relative;overflow:hidden}
+.hdr::before{content:'';position:absolute;top:-60px;right:-60px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(255,208,64,.08) 0%,transparent 70%);pointer-events:none}
+.hdr-tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;opacity:.8}
+.hdr h1{font-family:'Rajdhani',sans-serif;font-size:clamp(26px,4vw,44px);font-weight:700;color:#fff;line-height:1.1}
+.hdr h1 span{color:var(--gold)}
+.hdr-sub{font-size:15px;color:var(--dim);margin-top:8px}
+.hdr-eg{display:inline-flex;gap:20px;margin-top:16px;flex-wrap:wrap}
+.eg-chip{background:var(--panel2);border:1px solid var(--linebr);border-radius:6px;padding:5px 14px;font-family:'IBM Plex Mono',monospace;font-size:12px}
+.eg-chip .lbl{color:var(--dim);font-size:10px;display:block;margin-bottom:1px}
+.eg-chip .val{color:var(--gold)}
+.eg-chip.sl .val{color:var(--rose)}
+.eg-chip.tgt .val{color:var(--teal)}
+.badge-count{position:absolute;top:36px;right:40px;background:var(--gold);color:#0a0a0a;font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px}
+
+/* ── FILTER BAR ── */
+.filter-bar{background:var(--panel);border-bottom:1px solid var(--line);padding:14px 40px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;position:sticky;top:0;z-index:100}
+.filter-lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:2px;margin-right:6px}
+.ftag{background:transparent;border:1px solid var(--linebr);color:var(--dim);font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;padding:5px 14px;border-radius:20px;cursor:pointer;transition:all .2s}
+.ftag:hover,.ftag.active{background:var(--gold);border-color:var(--gold);color:#0a0a0a}
+.ftag[data-cat="entry"].active{background:var(--sky);border-color:var(--sky)}
+.ftag[data-cat="validity"].active{background:var(--lav);border-color:var(--lav)}
+.ftag[data-cat="risk"].active{background:var(--rose);border-color:var(--rose)}
+.ftag[data-cat="combo"].active{background:var(--teal);border-color:var(--teal)}
+.ftag[data-cat="advanced"].active{background:var(--org);border-color:var(--org)}
+.ftag[data-cat="algo"].active{background:var(--grn);border-color:var(--grn)}
+
+/* ── MAIN LAYOUT ── */
+.main{padding:30px 40px;max-width:1440px;margin:0 auto}
+
+/* ── SECTION ── */
+.section{margin-bottom:46px}
+.sec-hdr{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+.sec-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.sec-title{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;letter-spacing:.5px}
+.sec-count{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim);background:var(--panel2);border:1px solid var(--line);padding:3px 10px;border-radius:10px}
+.sec-divider{flex:1;height:1px;background:var(--line)}
+
+/* ── CARDS GRID ── */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+
+/* ── ORDER CARD ── */
+.card{background:var(--panel);border:1px solid var(--linebr);border-radius:10px;overflow:hidden;transition:transform .2s,box-shadow .2s;cursor:default}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.card-head{padding:14px 18px 10px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start}
+.card-name{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:#fff}
+.card-short{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--panel2);border:1px solid var(--linebr);padding:3px 8px;border-radius:4px;color:var(--gold);margin-top:3px}
+.card-cat{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-family:'IBM Plex Mono',monospace;padding:3px 10px;border-radius:10px;border:1px solid}
+.card-body{padding:14px 18px}
+.card-desc{font-size:14px;color:var(--dim);margin-bottom:12px;line-height:1.6}
+
+/* ── MINI TABLE inside card ── */
+.mini-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:10px}
+.mini-table td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.mini-table td:first-child{color:var(--note);font-family:'IBM Plex Mono',monospace;font-size:11px;white-space:nowrap;width:38%}
+.mini-table tr:last-child td{border-bottom:none}
+
+/* ── GAP BEHAVIOUR ── */
+.gap-tag{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:4px;margin-top:6px;font-family:'IBM Plex Mono',monospace}
+.gap-tag.safe{background:rgba(64,248,200,.12);border:1px solid rgba(64,248,200,.3);color:var(--teal)}
+.gap-tag.risk{background:rgba(255,144,144,.12);border:1px solid rgba(255,144,144,.3);color:var(--rose)}
+.gap-tag.neutral{background:rgba(160,188,216,.12);border:1px solid rgba(160,188,216,.3);color:var(--dim)}
+.gap-tag.warn{background:rgba(255,170,80,.12);border:1px solid rgba(255,170,80,.3);color:var(--org)}
+
+/* ── PILL INDICATORS ── */
+.pill-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.pill{font-size:11px;font-family:'IBM Plex Mono',monospace;padding:2px 8px;border-radius:10px;border:1px solid}
+.pill.y{background:rgba(152,240,72,.1);border-color:rgba(152,240,72,.35);color:var(--grn)}
+.pill.n{background:rgba(255,85,102,.1);border-color:rgba(255,85,102,.35);color:var(--red)}
+.pill.p{background:rgba(255,208,64,.1);border-color:rgba(255,208,64,.35);color:var(--gold)}
+
+/* ── COLOUR per category ── */
+.cat-entry   {color:var(--sky);  border-color:var(--sky)}
+.cat-validity{color:var(--lav);  border-color:var(--lav)}
+.cat-risk    {color:var(--rose); border-color:var(--rose)}
+.cat-combo   {color:var(--teal); border-color:var(--teal)}
+.cat-advanced{color:var(--org);  border-color:var(--org)}
+.cat-algo    {color:var(--grn);  border-color:var(--grn)}
+
+.dot-entry   {background:var(--sky)}
+.dot-validity{background:var(--lav)}
+.dot-risk    {background:var(--rose)}
+.dot-combo   {background:var(--teal)}
+.dot-advanced{background:var(--org)}
+.dot-algo    {background:var(--grn)}
+
+/* ── MASTER COMPARISON TABLE ── */
+.cmp-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--linebr);margin-bottom:46px}
+.cmp-table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}
+.cmp-table th{background:var(--panel2);color:var(--lbl);font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;padding:10px 14px;text-align:left;border-bottom:2px solid var(--linebr);letter-spacing:.5px}
+.cmp-table td{padding:9px 14px;border-bottom:1px solid var(--line);color:var(--txt);vertical-align:middle}
+.cmp-table tr:last-child td{border-bottom:none}
+.cmp-table tr:hover td{background:rgba(255,255,255,.02)}
+.cmp-cat-row td{background:var(--div);color:var(--lbl);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;padding:6px 14px;font-weight:700}
+td.yes{color:var(--teal)} td.no{color:var(--rose)} td.partial{color:var(--gold)}
+td.nm{color:var(--org);font-family:'IBM Plex Mono',monospace;font-size:12px}
+
+/* ── TRAIL BOX ── */
+.trail-box{background:var(--panel2);border:1px solid var(--linebr);border-radius:8px;padding:16px 20px;margin-bottom:30px}
+.trail-box h3{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:var(--teal);margin-bottom:12px}
+.trail-row{display:flex;align-items:center;gap:0;margin-bottom:6px;flex-wrap:wrap}
+.trail-node{background:var(--panel);border:1px solid var(--linebr);border-radius:6px;padding:6px 12px;font-family:'IBM Plex Mono',monospace;font-size:12px;text-align:center;min-width:80px}
+.trail-node .p{color:var(--sky);font-size:10px;margin-bottom:2px}
+.trail-node .v{font-size:14px;font-weight:700}
+.trail-node .v.up{color:var(--grn)} .trail-node .v.sl{color:var(--rose)} .trail-node .v.lock{color:var(--teal)}
+.trail-arrow{color:var(--linebr);font-size:18px;margin:0 4px}
+
+/* ── QUICK GUIDE ── */
+.qg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:40px}
+.qg-card{background:var(--panel);border:1px solid var(--linebr);border-radius:8px;padding:14px 18px}
+.qg-card .q{font-size:13px;color:var(--dim);margin-bottom:6px}
+.qg-card .a{font-size:15px;font-weight:600;color:var(--gold)}
+
+/* ── FOOTER ── */
+.foot{background:var(--panel);border-top:1px solid var(--line);padding:20px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:gap;font-size:13px;color:var(--dim)}
+.foot span{font-family:'IBM Plex Mono',monospace;font-size:11px}
+
+/* ── HIDDEN ── */
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<div class="hdr">
+  <div class="hdr-tag">Futures Trading Reference · India (NSE/BSE/MCX)</div>
+  <h1>All Order Types — <span>Complete Handbook</span></h1>
+  <div class="hdr-sub">Every order type available to a retail futures trader · Behaviour, rules, gaps, platform support</div>
+  <div class="hdr-eg">
+    <div class="eg-chip"><span class="lbl">EXAMPLE ENTRY</span><span class="val">₹100</span></div>
+    <div class="eg-chip sl"><span class="lbl">STOP LOSS</span><span class="val">₹90 (–10%)</span></div>
+    <div class="eg-chip tgt"><span class="lbl">TARGET</span><span class="val">₹130 (+30%)</span></div>
+    <div class="eg-chip"><span class="lbl">TRAIL JUMP</span><span class="val">₹10 steps</span></div>
+  </div>
+  <div class="badge-count">30 Order Types</div>
+</div>
+
+<!-- ══ FILTER BAR ══ -->
+<div class="filter-bar">
+  <span class="filter-lbl">CATEGORY</span>
+  <button class="ftag active" data-cat="all">All (30)</button>
+  <button class="ftag" data-cat="entry">Entry (9)</button>
+  <button class="ftag" data-cat="validity">Validity (5)</button>
+  <button class="ftag" data-cat="risk">Risk / Stop (5)</button>
+  <button class="ftag" data-cat="combo">Combination (5)</button>
+  <button class="ftag" data-cat="advanced">Advanced (4)</button>
+  <button class="ftag" data-cat="algo">Algo / Institutional (3)</button>
+</div>
+
+<div class="main">
+
+<!-- ══ TRAIL PRICE WALK ══ -->
+<div class="trail-box" id="sec-trail">
+  <h3>⟳ Trailing Stop-Loss Price Walk — ₹100 Entry · Trail = ₹10</h3>
+  <div class="trail-row">
+    <div class="trail-node"><div class="p">ENTRY</div><div class="v up">₹100</div></div>
+    <div class="trail-arrow">→</div>
+    <div class="trail-node"><div class="p">PRICE</div><div class="v up">₹110</div></div>
+    <div class="trail-arrow">→</div>
+    <div class="trail-node"><div class="p">SL moves</div><div class="v sl">₹100</div></div>
+    <div class="trail-arrow">→</div>
+    <div class="trail-node"><div class="p">PRICE</div><div class="v up">₹120</div></div>
+    <div class="trail-arrow">→</div>
+    <div class="trail-node"><div class="p">SL moves</div><div class="v sl">₹110</div></div>
+    <div class="trail-arrow">→</div>
+    <div class="trail-node"><div class="p">PRICE</div><div class="v up">₹130</div></div>
+    <div class="trail-arrow">→</div>
+    <div class="trail-node"><div class="p">SL moves</div><div class="v sl">₹120</div></div>
+    <div class="trail-arrow">→</div>
+    <div class="trail-node"><div class="p">PRICE</div><div class="v up">₹150</div></div>
+    <div class="trail-arrow">→</div>
+    <div class="trail-node"><div class="p">SL moves</div><div class="v sl">₹140</div></div>
+    <div class="trail-arrow">→</div>
+    <div class="trail-node"><div class="p">DROP to ₹145</div><div class="v lock">EXIT ₹140</div></div>
+  </div>
+  <div style="font-size:13px;color:var(--dim);margin-top:10px">SL moves <strong style="color:var(--teal)">UP only</strong> — never retreats. ₹40 profit locked when price falls 5 pts from ₹150 peak.</div>
+</div>
+
+<!-- ══ SECTION 1 : ENTRY ORDERS ══ -->
+<div class="section" id="sec-entry" data-section="entry">
+  <div class="sec-hdr">
+    <div class="sec-dot dot-entry"></div>
+    <div class="sec-title" style="color:var(--sky)">Entry / Basic Orders</div>
+    <div class="sec-count">9 types</div>
+    <div class="sec-divider"></div>
+  </div>
+  <div class="cards">
+
+    <!-- MARKET -->
+    <div class="card" data-cat="entry">
+      <div class="card-head">
+        <div><div class="card-name">Market Order</div><div class="card-short">MKT</div></div>
+        <div class="card-cat cat-entry">Entry</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Execute immediately at the best available price. No price guarantee — speed is the priority. Used when you must enter/exit regardless of price.</div>
+        <table class="mini-table">
+          <tr><td>Entry condition</td><td>Immediate</td></tr>
+          <tr><td>Execution price</td><td>Best available (₹99–₹101 range)</td></tr>
+          <tr><td>SL / Target</td><td>Must be placed separately</td></tr>
+          <tr><td>Platforms</td><td>All brokers</td></tr>
+        </table>
+        <div class="gap-tag risk">⚡ Gap risk: fills at any price — slippage uncontrolled</div>
+        <div class="pill-row"><span class="pill y">Guaranteed fill</span><span class="pill n">No price control</span><span class="pill y">Fastest entry</span></div>
+      </div>
+    </div>
+
+    <!-- LIMIT -->
+    <div class="card" data-cat="entry">
+      <div class="card-head">
+        <div><div class="card-name">Limit Order</div><div class="card-short">LMT</div></div>
+        <div class="card-cat cat-entry">Entry</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Buy only at ₹100 or below; Sell only at ₹100 or above. Rests in order book until matched. Perfect for entering at your exact price.</div>
+        <table class="mini-table">
+          <tr><td>Entry condition</td><td>Price ≤ ₹100 (for buy)</td></tr>
+          <tr><td>Execution price</td><td>₹100 or better</td></tr>
+          <tr><td>SL / Target</td><td>Must be placed separately</td></tr>
+          <tr><td>Platforms</td><td>All brokers</td></tr>
+        </table>
+        <div class="gap-tag warn">⚠ May not fill if price never reaches ₹100</div>
+        <div class="pill-row"><span class="pill y">Price control</span><span class="pill n">Fill not guaranteed</span><span class="pill p">Queue-dependent</span></div>
+      </div>
+    </div>
+
+    <!-- AMO -->
+    <div class="card" data-cat="entry">
+      <div class="card-head">
+        <div><div class="card-name">After Market Order</div><div class="card-short">AMO</div></div>
+        <div class="card-cat cat-entry">Entry</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Placed after market close (3:30 PM) for execution next session at open. Useful for pre-planning overnight positions. Available as Market or Limit type.</div>
+        <table class="mini-table">
+          <tr><td>Placement window</td><td>3:45 PM – 8:57 AM (next day)</td></tr>
+          <tr><td>Execution</td><td>Opening of next session</td></tr>
+          <tr><td>Order type</td><td>Can be Market or Limit AMO</td></tr>
+          <tr><td>Platforms</td><td>Zerodha, Groww, Dhan, AngelOne</td></tr>
+        </table>
+        <div class="gap-tag neutral">ℹ Executed at pre-open auction price or market open</div>
+        <div class="pill-row"><span class="pill y">Pre-plan entries</span><span class="pill p">Next-day fill</span></div>
+      </div>
+    </div>
+
+    <!-- IOC -->
+    <div class="card" data-cat="entry">
+      <div class="card-head">
+        <div><div class="card-name">Immediate or Cancel</div><div class="card-short">IOC</div></div>
+        <div class="card-cat cat-entry">Entry</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Executes immediately — fully or partially. Any unfilled quantity is <strong>cancelled instantly</strong>. Never sits in the order book. Useful for scalping or when you want partial fills at your price.</div>
+        <table class="mini-table">
+          <tr><td>Entry condition</td><td>Immediate execution attempt</td></tr>
+          <tr><td>Unmatched qty</td><td>Cancelled at once</td></tr>
+          <tr><td>Partial fill</td><td>Yes — accepted</td></tr>
+          <tr><td>Platforms</td><td>All NSE/BSE brokers</td></tr>
+        </table>
+        <div class="gap-tag neutral">ℹ Zero queue time — it fills or it dies immediately</div>
+        <div class="pill-row"><span class="pill p">Partial fills OK</span><span class="pill y">No queue wait</span><span class="pill n">May fill 0 lots</span></div>
+      </div>
+    </div>
+
+    <!-- FOK -->
+    <div class="card" data-cat="entry">
+      <div class="card-head">
+        <div><div class="card-name">Fill or Kill</div><div class="card-short">FOK</div></div>
+        <div class="card-cat cat-entry">Entry</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Must fill the <strong>entire</strong> order quantity immediately or the whole order is cancelled. No partial fills allowed. Rarely available on retail platforms — more common in institutional trading.</div>
+        <table class="mini-table">
+          <tr><td>Entry condition</td><td>Full qty must fill at once</td></tr>
+          <tr><td>Partial fill</td><td>Not permitted — cancels entirely</td></tr>
+          <tr><td>Use case</td><td>Large block orders, algos</td></tr>
+          <tr><td>Platforms</td><td>Limited retail support (API mostly)</td></tr>
+        </table>
+        <div class="gap-tag neutral">ℹ Stricter than IOC — all or nothing, instantly</div>
+        <div class="pill-row"><span class="pill n">No partials</span><span class="pill y">All-or-nothing</span></div>
+      </div>
+    </div>
+
+    <!-- MOO -->
+    <div class="card" data-cat="entry">
+      <div class="card-head">
+        <div><div class="card-name">Market on Open</div><div class="card-short">MOO</div></div>
+        <div class="card-cat cat-entry">Entry</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Executes at the opening price of the trading session. Submitted before open; fills during the opening auction at whatever clearing price emerges. Popular with gap traders.</div>
+        <table class="mini-table">
+          <tr><td>Timing</td><td>Pre-market → fills at open</td></tr>
+          <tr><td>Price</td><td>Opening auction price</td></tr>
+          <tr><td>Guaranteed fill</td><td>Yes (at open price)</td></tr>
+          <tr><td>Platforms</td><td>Via AMO (Market type) or API</td></tr>
+        </table>
+        <div class="gap-tag risk">⚡ Opening gaps can cause large slippage vs previous close</div>
+        <div class="pill-row"><span class="pill y">Guaranteed open fill</span><span class="pill n">Price unknown pre-open</span></div>
+      </div>
+    </div>
+
+    <!-- LOO -->
+    <div class="card" data-cat="entry">
+      <div class="card-head">
+        <div><div class="card-name">Limit on Open</div><div class="card-short">LOO</div></div>
+        <div class="card-cat cat-entry">Entry</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Like MOO but with a price limit at open. Will fill at open only if the opening auction price is at or below your limit (for buy). Otherwise cancelled. Protects against large gap-ups at open.</div>
+        <table class="mini-table">
+          <tr><td>Timing</td><td>Pre-market → fills only if open ≤ limit</td></tr>
+          <tr><td>Price</td><td>Opening price or better</td></tr>
+          <tr><td>Cancel condition</td><td>If open > limit price (for buy)</td></tr>
+          <tr><td>Platforms</td><td>AMO Limit type / API</td></tr>
+        </table>
+        <div class="gap-tag warn">⚠ May not fill if stock gaps above your limit on open</div>
+        <div class="pill-row"><span class="pill y">Open price protection</span><span class="pill p">May cancel if gap</span></div>
+      </div>
+    </div>
+
+    <!-- MOC -->
+    <div class="card" data-cat="entry">
+      <div class="card-head">
+        <div><div class="card-name">Market on Close</div><div class="card-short">MOC</div></div>
+        <div class="card-cat cat-entry">Entry</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Executes at the closing price of the session (closing auction 3:00–3:30 PM on NSE). Used by mutual funds, index rebalancers, and BTST traders to enter/exit at official close.</div>
+        <table class="mini-table">
+          <tr><td>Timing</td><td>Closing auction window</td></tr>
+          <tr><td>Price</td><td>Official closing auction price</td></tr>
+          <tr><td>Guaranteed fill</td><td>Yes (at closing price)</td></tr>
+          <tr><td>Platforms</td><td>Zerodha (CNC), institutional API</td></tr>
+        </table>
+        <div class="gap-tag neutral">ℹ Price known only after close. BTST-friendly.</div>
+        <div class="pill-row"><span class="pill y">Official close price</span><span class="pill p">Delay vs intraday</span></div>
+      </div>
+    </div>
+
+    <!-- LOC -->
+    <div class="card" data-cat="entry">
+      <div class="card-head">
+        <div><div class="card-name">Limit on Close</div><div class="card-short">LOC</div></div>
+        <div class="card-cat cat-entry">Entry</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Like MOC but only fills if the closing auction price matches your limit. Protects against adverse closing auctions. Niche — mainly API/institutional.</div>
+        <table class="mini-table">
+          <tr><td>Timing</td><td>Closing auction</td></tr>
+          <tr><td>Price</td><td>Close price or better (limit floor)</td></tr>
+          <tr><td>Cancel condition</td><td>If close > limit (for buy)</td></tr>
+          <tr><td>Platforms</td><td>Mainly API / institutional</td></tr>
+        </table>
+        <div class="gap-tag neutral">ℹ Combines price protection with close-price targeting</div>
+        <div class="pill-row"><span class="pill y">Close + limit protection</span><span class="pill p">May not fill</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ SECTION 2 : ORDER VALIDITY ══ -->
+<div class="section" id="sec-validity" data-section="validity">
+  <div class="sec-hdr">
+    <div class="sec-dot dot-validity"></div>
+    <div class="sec-title" style="color:var(--lav)">Order Validity Types</div>
+    <div class="sec-count">5 types</div>
+    <div class="sec-divider"></div>
+  </div>
+  <div class="cards">
+
+    <!-- DAY -->
+    <div class="card" data-cat="validity">
+      <div class="card-head">
+        <div><div class="card-name">Day Order</div><div class="card-short">DAY</div></div>
+        <div class="card-cat cat-validity">Validity</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Order is valid only for the current trading session. If not filled by 3:30 PM, it is automatically cancelled. Default validity for most retail orders in India.</div>
+        <table class="mini-table">
+          <tr><td>Valid till</td><td>Market close same day</td></tr>
+          <tr><td>Auto-cancel</td><td>3:30 PM if unfilled</td></tr>
+          <tr><td>Default for</td><td>All intraday trades</td></tr>
+          <tr><td>Platforms</td><td>All brokers (default)</td></tr>
+        </table>
+        <div class="gap-tag neutral">ℹ Safest validity — position won't linger overnight</div>
+        <div class="pill-row"><span class="pill y">Auto-expires</span><span class="pill y">Default choice</span></div>
+      </div>
+    </div>
+
+    <!-- GTC -->
+    <div class="card" data-cat="validity">
+      <div class="card-head">
+        <div><div class="card-name">Good Till Cancelled</div><div class="card-short">GTC</div></div>
+        <div class="card-cat cat-validity">Validity</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Order remains active across sessions until filled OR manually cancelled. NSE/BSE allow GTC for a maximum of 1 year. Critical for swing traders who want to set and forget at a level.</div>
+        <table class="mini-table">
+          <tr><td>Valid till</td><td>Filled or manually cancelled (max 1 yr)</td></tr>
+          <tr><td>Survives weekends</td><td>Yes</td></tr>
+          <tr><td>Use case</td><td>Limit orders at key support/resistance</td></tr>
+          <tr><td>Platforms</td><td>Zerodha, Dhan, Fyers (via GTT)</td></tr>
+        </table>
+        <div class="gap-tag warn">⚠ Review periodically — stale orders can fill at bad prices</div>
+        <div class="pill-row"><span class="pill y">Multi-day</span><span class="pill p">Manual cancel needed</span></div>
+      </div>
+    </div>
+
+    <!-- GTD -->
+    <div class="card" data-cat="validity">
+      <div class="card-head">
+        <div><div class="card-name">Good Till Date</div><div class="card-short">GTD</div></div>
+        <div class="card-cat cat-validity">Validity</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Order stays active until a specific date you choose. After that date, it cancels automatically. More controlled than GTC — useful for event-driven trades (Budget, RBI policy).</div>
+        <table class="mini-table">
+          <tr><td>Valid till</td><td>User-specified date (auto-cancels)</td></tr>
+          <tr><td>Survives weekends</td><td>Yes</td></tr>
+          <tr><td>Use case</td><td>Event-driven setups with a deadline</td></tr>
+          <tr><td>Platforms</td><td>Dhan, Fyers, API</td></tr>
+        </table>
+        <div class="gap-tag neutral">ℹ Combines patience of GTC with the safety of an expiry</div>
+        <div class="pill-row"><span class="pill y">Auto-expires on date</span><span class="pill y">Event trades</span></div>
+      </div>
+    </div>
+
+    <!-- GTT -->
+    <div class="card" data-cat="validity">
+      <div class="card-head">
+        <div><div class="card-name">Good Till Triggered</div><div class="card-short">GTT</div></div>
+        <div class="card-cat cat-validity">Validity</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">A conditional order that waits — days, weeks, months — until a price trigger is hit. When triggered, it places a Limit order automatically. Zerodha's GTT also supports two-leg (entry + SL) configurations.</div>
+        <table class="mini-table">
+          <tr><td>Trigger price</td><td>₹100 (your entry condition)</td></tr>
+          <tr><td>Action on trigger</td><td>Places a Limit order at ₹100</td></tr>
+          <tr><td>Max validity</td><td>1 year</td></tr>
+          <tr><td>Platforms</td><td>Zerodha (Kite), Groww, Dhan</td></tr>
+        </table>
+        <div class="gap-tag safe">✓ Stored on broker server — survives app restarts</div>
+        <div class="pill-row"><span class="pill y">Cross-session</span><span class="pill y">Server-stored</span><span class="pill p">Trigger → Limit only</span></div>
+      </div>
+    </div>
+
+    <!-- DISCLOSED QTY / ICEBERG -->
+    <div class="card" data-cat="validity">
+      <div class="card-head">
+        <div><div class="card-name">Disclosed Quantity</div><div class="card-short">DQ / Iceberg</div></div>
+        <div class="card-cat cat-validity">Validity</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Show only a portion of your total order to the market. E.g., you want to buy 100 lots but show only 10 at a time. Reduces market impact. Requires minimum disclosed qty to be ≥ 10% of total on NSE.</div>
+        <table class="mini-table">
+          <tr><td>Total qty</td><td>100 lots (hidden)</td></tr>
+          <tr><td>Shown qty</td><td>10 lots (visible in L2)</td></tr>
+          <tr><td>Refill rule</td><td>Auto-reloads each time slice fills</td></tr>
+          <tr><td>Platforms</td><td>Zerodha (API), institutional desks</td></tr>
+        </table>
+        <div class="gap-tag neutral">ℹ NSE rule: disclosed qty ≥ 10% of order qty</div>
+        <div class="pill-row"><span class="pill y">Hides intent</span><span class="pill p">API/Pro platforms</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ SECTION 3 : RISK / STOP ORDERS ══ -->
+<div class="section" id="sec-risk" data-section="risk">
+  <div class="sec-hdr">
+    <div class="sec-dot dot-risk"></div>
+    <div class="sec-title" style="color:var(--rose)">Risk / Stop Orders</div>
+    <div class="sec-count">5 types</div>
+    <div class="sec-divider"></div>
+  </div>
+  <div class="cards">
+
+    <!-- SLM -->
+    <div class="card" data-cat="risk">
+      <div class="card-head">
+        <div><div class="card-name">Stop-Loss Market</div><div class="card-short">SLM</div></div>
+        <div class="card-cat cat-risk">Risk</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">When price hits your trigger (₹90), a <strong>Market</strong> order fires. Guarantees exit but not price. In a fast crash or circuit filter, you may exit at ₹87 or worse.</div>
+        <table class="mini-table">
+          <tr><td>Trigger</td><td>₹90</td></tr>
+          <tr><td>Execution type</td><td>Market — best available</td></tr>
+          <tr><td>Guaranteed exit</td><td>Yes (at some price)</td></tr>
+          <tr><td>Platforms</td><td>All brokers</td></tr>
+        </table>
+        <div class="gap-tag risk">⚡ No price floor — can exit at ₹87, ₹85 on fast moves</div>
+        <div class="pill-row"><span class="pill y">Always exits</span><span class="pill n">Price unknown</span></div>
+      </div>
+    </div>
+
+    <!-- SL-LIMIT -->
+    <div class="card" data-cat="risk">
+      <div class="card-head">
+        <div><div class="card-name">Stop-Loss Limit</div><div class="card-short">SL / SL-L</div></div>
+        <div class="card-cat cat-risk">Risk</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Trigger at ₹90 fires a <strong>Limit</strong> order at ₹88. Protects from excessive slippage but risks <strong>non-execution</strong> if price gaps below ₹88 without touching it.</div>
+        <table class="mini-table">
+          <tr><td>Trigger</td><td>₹90</td></tr>
+          <tr><td>Limit price</td><td>₹88 (floor)</td></tr>
+          <tr><td>Guaranteed exit</td><td>No — may stay stuck</td></tr>
+          <tr><td>Platforms</td><td>All brokers</td></tr>
+        </table>
+        <div class="gap-tag risk">⚡ Gap below ₹88 = ORDER STAYS OPEN — you remain in position</div>
+        <div class="pill-row"><span class="pill y">Price floor</span><span class="pill n">May not fill on gap</span></div>
+      </div>
+    </div>
+
+    <!-- TRAILING SL -->
+    <div class="card" data-cat="risk">
+      <div class="card-head">
+        <div><div class="card-name">Trailing Stop Loss</div><div class="card-short">TSL</div></div>
+        <div class="card-cat cat-risk">Risk</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">SL moves <strong>up</strong> automatically as price rises, always trailing by ₹10. Locks in profit progressively. Never moves down. ₹100 entry → SL at ₹90 → price ₹130 → SL now ₹120.</div>
+        <table class="mini-table">
+          <tr><td>Trail distance</td><td>₹10 (fixed absolute)</td></tr>
+          <tr><td>SL at ₹130 price</td><td>₹120</td></tr>
+          <tr><td>SL at ₹150 price</td><td>₹140</td></tr>
+          <tr><td>Platforms</td><td>Dhan (SUPER), Fyers, API algos</td></tr>
+        </table>
+        <div class="gap-tag safe">✓ Profit compounds automatically — ideal for trending moves</div>
+        <div class="pill-row"><span class="pill y">Auto profit lock</span><span class="pill y">Never moves down</span><span class="pill p">May exit early on whipsaw</span></div>
+      </div>
+    </div>
+
+    <!-- OCO -->
+    <div class="card" data-cat="risk">
+      <div class="card-head">
+        <div><div class="card-name">One Cancels Other</div><div class="card-short">OCO</div></div>
+        <div class="card-cat cat-risk">Risk</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Two orders linked: if SL (₹90) fires, Target (₹130) is automatically cancelled — and vice versa. Standard risk management pairing. Bracket Order is the retail implementation of OCO.</div>
+        <table class="mini-table">
+          <tr><td>Order A (SL)</td><td>SLM at ₹90</td></tr>
+          <tr><td>Order B (Target)</td><td>Limit Sell at ₹130</td></tr>
+          <tr><td>When A fires</td><td>B is cancelled</td></tr>
+          <tr><td>Platforms</td><td>Via Bracket Order / SUPER / API</td></tr>
+        </table>
+        <div class="gap-tag safe">✓ No double-exit risk — exactly one leg will execute</div>
+        <div class="pill-row"><span class="pill y">Auto-cancel of other</span><span class="pill y">Clean exit logic</span></div>
+      </div>
+    </div>
+
+    <!-- OTO -->
+    <div class="card" data-cat="risk">
+      <div class="card-head">
+        <div><div class="card-name">One Triggers Other</div><div class="card-short">OTO</div></div>
+        <div class="card-cat cat-risk">Risk</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Parent order triggers a child order upon fill. E.g., Limit Buy at ₹100 fills → automatically places SLM at ₹90. Eliminates the gap between entry and SL placement. Mainly via API or platforms like Dhan SUPER.</div>
+        <table class="mini-table">
+          <tr><td>Parent</td><td>Limit Buy at ₹100</td></tr>
+          <tr><td>Child (triggered on fill)</td><td>SLM at ₹90</td></tr>
+          <tr><td>Trigger condition</td><td>Parent fully/partially filled</td></tr>
+          <tr><td>Platforms</td><td>Dhan, API (Zerodha/Fyers)</td></tr>
+        </table>
+        <div class="gap-tag safe">✓ SL appears the moment entry fills — zero manual delay</div>
+        <div class="pill-row"><span class="pill y">Zero SL lag</span><span class="pill p">Platform-dependent</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ SECTION 4 : COMBINATION ORDERS ══ -->
+<div class="section" id="sec-combo" data-section="combo">
+  <div class="sec-hdr">
+    <div class="sec-dot dot-combo"></div>
+    <div class="sec-title" style="color:var(--teal)">Combination / Multi-Leg Orders</div>
+    <div class="sec-count">5 types</div>
+    <div class="sec-divider"></div>
+  </div>
+  <div class="cards">
+
+    <!-- BRACKET -->
+    <div class="card" data-cat="combo">
+      <div class="card-head">
+        <div><div class="card-name">Bracket Order</div><div class="card-short">BO</div></div>
+        <div class="card-cat cat-combo">Combo</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Three-legged order: Entry + SL + Target placed simultaneously. Whichever of SL/Target hits first cancels the other. Margin benefit on some platforms. Entry must be Market or Limit.</div>
+        <table class="mini-table">
+          <tr><td>Entry</td><td>Market/Limit at ₹100</td></tr>
+          <tr><td>SL leg</td><td>SLM at ₹90 (auto-placed)</td></tr>
+          <tr><td>Target leg</td><td>Limit Sell at ₹130 (auto-placed)</td></tr>
+          <tr><td>Platforms</td><td>Zerodha, Dhan, Fyers, AngelOne</td></tr>
+        </table>
+        <div class="gap-tag safe">✓ OCO logic built in — cleanest retail combo order</div>
+        <div class="pill-row"><span class="pill y">All 3 legs at once</span><span class="pill y">Lower margin</span><span class="pill n">Intraday only (most brokers)</span></div>
+      </div>
+    </div>
+
+    <!-- COVER -->
+    <div class="card" data-cat="combo">
+      <div class="card-head">
+        <div><div class="card-name">Cover Order</div><div class="card-short">CO</div></div>
+        <div class="card-cat cat-combo">Combo</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Entry + mandatory SLM. The SL cannot be removed once placed — broker enforces it. In return, you get significantly reduced margin (leverage). No target leg (unlike BO).</div>
+        <table class="mini-table">
+          <tr><td>Entry</td><td>Market/Limit at ₹100</td></tr>
+          <tr><td>SL leg</td><td>SLM at ₹90 (mandatory, irremovable)</td></tr>
+          <tr><td>Target leg</td><td>None — manual exit required</td></tr>
+          <tr><td>Platforms</td><td>Zerodha, Upstox, AngelOne</td></tr>
+        </table>
+        <div class="gap-tag warn">⚠ SL is locked — can't be moved lower, only higher</div>
+        <div class="pill-row"><span class="pill y">Lowest margin</span><span class="pill n">No target automation</span><span class="pill p">Intraday only</span></div>
+      </div>
+    </div>
+
+    <!-- OTOCO -->
+    <div class="card" data-cat="combo">
+      <div class="card-head">
+        <div><div class="card-name">One Triggers OCO</div><div class="card-short">OTOCO</div></div>
+        <div class="card-cat cat-combo">Combo</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">A three-step conditional flow: if your entry triggers → places an OCO (SL + Target pair). The full BO/SUPER logic replicated via API. Most retail Bracket Orders are OTOCO under the hood.</div>
+        <table class="mini-table">
+          <tr><td>Step 1</td><td>Limit Entry triggers at ₹100</td></tr>
+          <tr><td>Step 2 (on fill)</td><td>OCO created: SLM ₹90 + Limit ₹130</td></tr>
+          <tr><td>Step 3</td><td>Whichever fires → other cancels</td></tr>
+          <tr><td>Platforms</td><td>API / Dhan SUPER / Advanced BO</td></tr>
+        </table>
+        <div class="gap-tag safe">✓ Fully automated 3-stage trade lifecycle</div>
+        <div class="pill-row"><span class="pill y">Full automation</span><span class="pill p">API/advanced platforms</span></div>
+      </div>
+    </div>
+
+    <!-- SUPER ORDER -->
+    <div class="card" data-cat="combo">
+      <div class="card-head">
+        <div><div class="card-name">SUPER Order</div><div class="card-short">SUPER (Dhan)</div></div>
+        <div class="card-cat cat-combo">Combo</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Dhan's proprietary 5-in-1 order: Entry Trigger + Limit Entry + SL + Target + Trail Jump. All legs stored on Dhan servers, hidden from exchange until each activates. The most advanced retail order in India.</div>
+        <table class="mini-table">
+          <tr><td>Trigger price</td><td>₹100</td></tr>
+          <tr><td>SL</td><td>₹90 with Trail Jump ₹10</td></tr>
+          <tr><td>Target</td><td>₹130</td></tr>
+          <tr><td>Trail logic</td><td>SL steps up ₹10 for each ₹10 rise</td></tr>
+        </table>
+        <div class="gap-tag safe">✓ Server-side — survives internet disconnection</div>
+        <div class="pill-row"><span class="pill y">5 legs in 1</span><span class="pill y">Trail built-in</span><span class="pill y">Server-stored</span></div>
+      </div>
+    </div>
+
+    <!-- BASKET ORDER -->
+    <div class="card" data-cat="combo">
+      <div class="card-head">
+        <div><div class="card-name">Basket Order</div><div class="card-short">BASKET</div></div>
+        <div class="card-cat cat-combo">Combo</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Multiple orders for different symbols placed simultaneously in one click. Used for index replication, multi-stock strategies, or portfolio rebalancing. Not a single-instrument order — operates across many.</div>
+        <table class="mini-table">
+          <tr><td>Example</td><td>Buy NIFTY Fut + Sell BANKNIFTY Fut simultaneously</td></tr>
+          <tr><td>Order types inside</td><td>Each leg can be Market or Limit</td></tr>
+          <tr><td>Use case</td><td>Pairs trading, hedging, index replication</td></tr>
+          <tr><td>Platforms</td><td>Zerodha, Dhan, Fyers, AngelOne</td></tr>
+        </table>
+        <div class="gap-tag neutral">ℹ Each leg executes independently — timing slippage between legs</div>
+        <div class="pill-row"><span class="pill y">Multi-symbol at once</span><span class="pill n">Legs not guaranteed simultaneous</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ SECTION 5 : ADVANCED ORDERS ══ -->
+<div class="section" id="sec-advanced" data-section="advanced">
+  <div class="sec-hdr">
+    <div class="sec-dot dot-advanced"></div>
+    <div class="sec-title" style="color:var(--org)">Advanced / Platform-Specific Orders</div>
+    <div class="sec-count">4 types</div>
+    <div class="sec-divider"></div>
+  </div>
+  <div class="cards">
+
+    <!-- SPREAD ORDER -->
+    <div class="card" data-cat="advanced">
+      <div class="card-head">
+        <div><div class="card-name">Spread Order</div><div class="card-short">SPREAD</div></div>
+        <div class="card-cat cat-advanced">Advanced</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Simultaneously buy one contract and sell another related contract (e.g., Gold Oct vs Gold Dec on MCX). Executes on the <strong>price difference</strong> between the two legs, not absolute price. Used for calendar spreads and arbitrage.</div>
+        <table class="mini-table">
+          <tr><td>Example</td><td>Buy MCX Gold Oct ₹100, Sell Gold Dec ₹102</td></tr>
+          <tr><td>Trade on</td><td>The ₹2 spread, not the legs</td></tr>
+          <tr><td>Margin benefit</td><td>Yes — reduced as legs offset risk</td></tr>
+          <tr><td>Platforms</td><td>MCX spread contracts, Zerodha, Dhan</td></tr>
+        </table>
+        <div class="gap-tag safe">✓ Lower margin than two outright positions</div>
+        <div class="pill-row"><span class="pill y">Calendar/Basis spread</span><span class="pill y">Lower margin</span><span class="pill p">MCX mainly</span></div>
+      </div>
+    </div>
+
+    <!-- MTF -->
+    <div class="card" data-cat="advanced">
+      <div class="card-head">
+        <div><div class="card-name">Margin Trade Facility</div><div class="card-short">MTF</div></div>
+        <div class="card-cat cat-advanced">Advanced</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Buy stocks/ETFs with leverage and carry the position for days/weeks by paying interest. Not technically a separate order type — it's a funding mechanism. Your broker pledges shares; you pay ~0.04–0.06% per day interest.</div>
+        <table class="mini-table">
+          <tr><td>Leverage</td><td>Up to 4–5x on eligible stocks</td></tr>
+          <tr><td>Carry cost</td><td>~14–18% p.a. (broker-specific)</td></tr>
+          <tr><td>Margin call risk</td><td>Yes — if value drops, top-up required</td></tr>
+          <tr><td>Platforms</td><td>mStock (0% MTF), Kotak, HDFC Sec</td></tr>
+        </table>
+        <div class="gap-tag warn">⚠ Daily interest erodes returns if position held too long</div>
+        <div class="pill-row"><span class="pill y">Multi-day leverage</span><span class="pill n">Interest cost daily</span><span class="pill p">Equity only (not F&O)</span></div>
+      </div>
+    </div>
+
+    <!-- SYNTHETIC BRACKET -->
+    <div class="card" data-cat="advanced">
+      <div class="card-head">
+        <div><div class="card-name">Synthetic Bracket</div><div class="card-short">SYN-BO</div></div>
+        <div class="card-cat cat-advanced">Advanced</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Manually replicating Bracket Order logic where native BO is unavailable (e.g., options, or platforms without BO). Entry filled → separately place SLM + Target Limit with manual cancel-the-other logic via API or screen.</div>
+        <table class="mini-table">
+          <tr><td>Entry</td><td>Any order type at ₹100</td></tr>
+          <tr><td>Post-fill</td><td>Manually place SLM ₹90 + Limit ₹130</td></tr>
+          <tr><td>Cancel logic</td><td>Manual or API webhook on fill alert</td></tr>
+          <tr><td>Platforms</td><td>API (Zerodha, Dhan, Fyers, AngelOne)</td></tr>
+        </table>
+        <div class="gap-tag warn">⚠ Requires discipline or automation — human error risk</div>
+        <div class="pill-row"><span class="pill p">Manual OCO</span><span class="pill y">Works for options too</span><span class="pill n">No native auto-cancel</span></div>
+      </div>
+    </div>
+
+    <!-- BEYOND TARGET TRAIL -->
+    <div class="card" data-cat="advanced">
+      <div class="card-head">
+        <div><div class="card-name">Beyond-Target Trail</div><div class="card-short">BTT / Algo</div></div>
+        <div class="card-cat cat-advanced">Advanced</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Your "leading jump" concept: after price crosses ₹130 target, <em>don't exit</em> — instead switch to trail mode with ₹10 jumps. Native SUPER Order exits at target; this requires algo override via API to continue trailing beyond ₹130.</div>
+        <table class="mini-table">
+          <tr><td>At ₹130</td><td>Cancel target exit, activate trail</td></tr>
+          <tr><td>Trail fires</td><td>Only if price drops ₹10 from peak</td></tr>
+          <tr><td>At ₹150 peak</td><td>Exits at ₹140 — ₹40 profit</td></tr>
+          <tr><td>Implementation</td><td>API (Python/Kite API) + alert webhook</td></tr>
+        </table>
+        <div class="gap-tag warn">⚠ Requires algo/API — not possible on any native platform UI</div>
+        <div class="pill-row"><span class="pill y">Unlimited upside capture</span><span class="pill n">API only</span><span class="pill p">Custom logic needed</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ SECTION 6 : ALGO / INSTITUTIONAL ══ -->
+<div class="section" id="sec-algo" data-section="algo">
+  <div class="sec-hdr">
+    <div class="sec-dot dot-algo"></div>
+    <div class="sec-title" style="color:var(--grn)">Algo / Institutional Orders</div>
+    <div class="sec-count">3 types</div>
+    <div class="sec-divider"></div>
+  </div>
+  <div class="cards">
+
+    <!-- VWAP -->
+    <div class="card" data-cat="algo">
+      <div class="card-head">
+        <div><div class="card-name">VWAP Order</div><div class="card-short">VWAP</div></div>
+        <div class="card-cat cat-algo">Algo</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Algorithm slices a large order into smaller child orders, targeting execution near the Volume Weighted Average Price over the day. Used by mutual funds / FIIs to minimize market impact on large trades.</div>
+        <table class="mini-table">
+          <tr><td>Goal</td><td>Average fill ≈ day's VWAP</td></tr>
+          <tr><td>Method</td><td>Small slices sent throughout session</td></tr>
+          <tr><td>Use case</td><td>Large qty — 500+ lots</td></tr>
+          <tr><td>Platforms</td><td>Institutional OMS, Symphony Presto, API</td></tr>
+        </table>
+        <div class="gap-tag neutral">ℹ Retail traders can approximate manually via spaced limit orders</div>
+        <div class="pill-row"><span class="pill y">Minimizes market impact</span><span class="pill p">Institutional/API only</span></div>
+      </div>
+    </div>
+
+    <!-- TWAP -->
+    <div class="card" data-cat="algo">
+      <div class="card-head">
+        <div><div class="card-name">TWAP Order</div><div class="card-short">TWAP</div></div>
+        <div class="card-cat cat-algo">Algo</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Algorithm splits a large order into equal time-interval slices. E.g., buy 100 lots: place 10 lots every 30 minutes over 5 hours. Time-based rather than volume-based like VWAP. Simpler but less adaptive.</div>
+        <table class="mini-table">
+          <tr><td>Goal</td><td>Average fill over time, ignore volume</td></tr>
+          <tr><td>Method</td><td>Equal qty every fixed time slice</td></tr>
+          <tr><td>Use case</td><td>Predictable execution scheduling</td></tr>
+          <tr><td>Platforms</td><td>API / institutional OMS</td></tr>
+        </table>
+        <div class="gap-tag neutral">ℹ Simpler than VWAP — predictable but ignores liquidity windows</div>
+        <div class="pill-row"><span class="pill y">Predictable schedule</span><span class="pill p">API only</span><span class="pill n">Ignores volume</span></div>
+      </div>
+    </div>
+
+    <!-- ALGO/API CUSTOM -->
+    <div class="card" data-cat="algo">
+      <div class="card-head">
+        <div><div class="card-name">API Custom Algo Order</div><div class="card-short">ALGO / API</div></div>
+        <div class="card-cat cat-algo">Algo</div>
+      </div>
+      <div class="card-body">
+        <div class="card-desc">Any order logic you write yourself via broker API (Zerodha Kite, Dhan API, Fyers API). Enables trailing stop beyond targets, dynamic SL shifts on indicator signals, multi-leg hedging, and fully automated strategy execution.</div>
+        <table class="mini-table">
+          <tr><td>Languages</td><td>Python (most popular), Node.js, Java</td></tr>
+          <tr><td>Order types available</td><td>All exchange-supported types</td></tr>
+          <tr><td>Key capability</td><td>Conditional → react to fills, prices, time</td></tr>
+          <tr><td>Platforms</td><td>Zerodha Kite, Dhan, Fyers, AngelOne API</td></tr>
+        </table>
+        <div class="gap-tag safe">✓ Unlimited logic — most powerful trading tool available</div>
+        <div class="pill-row"><span class="pill y">Unlimited logic</span><span class="pill y">All order types</span><span class="pill p">Requires coding</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ MASTER COMPARISON TABLE ══ -->
+<div style="margin-bottom:20px">
+  <div class="sec-hdr">
+    <div class="sec-dot" style="background:var(--gold)"></div>
+    <div class="sec-title" style="color:var(--gold)">Master Comparison Table</div>
+    <div class="sec-count">All 30 types</div>
+    <div class="sec-divider"></div>
+  </div>
+</div>
+<div class="cmp-wrap">
+<table class="cmp-table">
+  <thead>
+    <tr>
+      <th>Order Type</th>
+      <th>Short</th>
+      <th>Entry at ₹100</th>
+      <th>SL ₹90</th>
+      <th>Target ₹130</th>
+      <th>Gap-safe?</th>
+      <th>Multi-day?</th>
+      <th>Auto-exit?</th>
+      <th>Margin ↓</th>
+      <th>Platform</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="cmp-cat-row"><td colspan="10">── ENTRY / BASIC ORDERS ──</td></tr>
+    <tr><td>Market Order</td><td class="nm">MKT</td><td>Immediate best-ask</td><td class="no">Manual</td><td class="no">Manual</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td>All</td></tr>
+    <tr><td>Limit Order</td><td class="nm">LMT</td><td>Exact ₹100 or better</td><td class="no">Manual</td><td class="no">Manual</td><td class="partial">Partial</td><td class="partial">Via GTT</td><td class="no">No</td><td class="no">No</td><td>All</td></tr>
+    <tr><td>After Market Order</td><td class="nm">AMO</td><td>Next session open</td><td class="no">Manual</td><td class="no">Manual</td><td class="no">No</td><td class="no">No (next day)</td><td class="no">No</td><td class="no">No</td><td>Most</td></tr>
+    <tr><td>IOC</td><td class="nm">IOC</td><td>Immediate, partial OK</td><td class="no">Manual</td><td class="no">Manual</td><td class="partial">Partial</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td>All</td></tr>
+    <tr><td>Fill or Kill</td><td class="nm">FOK</td><td>All-or-nothing instant</td><td class="no">Manual</td><td class="no">Manual</td><td class="partial">Partial</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td>API/Inst.</td></tr>
+    <tr><td>Market on Open</td><td class="nm">MOO</td><td>Opening auction price</td><td class="no">Manual</td><td class="no">Manual</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td>AMO/API</td></tr>
+    <tr><td>Limit on Open</td><td class="nm">LOO</td><td>Open if ≤ ₹100</td><td class="no">Manual</td><td class="no">Manual</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td>AMO/API</td></tr>
+    <tr><td>Market on Close</td><td class="nm">MOC</td><td>Closing auction</td><td class="no">Manual</td><td class="no">Manual</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td>Zerodha/API</td></tr>
+    <tr><td>Limit on Close</td><td class="nm">LOC</td><td>Close if ≤ ₹100</td><td class="no">Manual</td><td class="no">Manual</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td>API/Inst.</td></tr>
+    <tr class="cmp-cat-row"><td colspan="10">── VALIDITY TYPES ──</td></tr>
+    <tr><td>Day Order</td><td class="nm">DAY</td><td>Same session only</td><td class="no">Manual</td><td class="no">Manual</td><td class="partial">Partial</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td>All (default)</td></tr>
+    <tr><td>Good Till Cancelled</td><td class="nm">GTC</td><td>Any session up to 1 yr</td><td class="no">Manual</td><td class="no">Manual</td><td class="partial">Partial</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td>Most</td></tr>
+    <tr><td>Good Till Date</td><td class="nm">GTD</td><td>Until your chosen date</td><td class="no">Manual</td><td class="no">Manual</td><td class="partial">Partial</td><td class="yes">Yes</td><td class="no">No</td><td class="no">No</td><td>Dhan, Fyers</td></tr>
+    <tr><td>Good Till Triggered</td><td class="nm">GTT</td><td>When trigger price hit</td><td class="no">Separate GTT</td><td class="no">Separate GTT</td><td class="partial">Partial</td><td class="yes">Yes</td><td class="partial">On trigger</td><td class="no">No</td><td>Zerodha, Groww</td></tr>
+    <tr><td>Disclosed Qty / Iceberg</td><td class="nm">DQ</td><td>Shows partial qty</td><td class="no">Manual</td><td class="no">Manual</td><td class="partial">Partial</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td>API, Inst.</td></tr>
+    <tr class="cmp-cat-row"><td colspan="10">── RISK / STOP ORDERS ──</td></tr>
+    <tr><td>Stop-Loss Market</td><td class="nm">SLM</td><td>—</td><td class="yes">₹90 trigger → MKT</td><td class="no">Manual</td><td class="no">No floor</td><td class="no">No</td><td class="yes">Yes (fills)</td><td class="no">No</td><td>All</td></tr>
+    <tr><td>Stop-Loss Limit</td><td class="nm">SL-L</td><td>—</td><td class="partial">₹90 trigger → ₹88 limit</td><td class="no">Manual</td><td class="no">May not fill</td><td class="no">No</td><td class="partial">If fills</td><td class="no">No</td><td>All</td></tr>
+    <tr><td>Trailing Stop Loss</td><td class="nm">TSL</td><td>—</td><td class="yes">Moves up with price</td><td class="no">No fixed target</td><td class="no">SL still moves</td><td class="no">No</td><td class="yes">Yes (trail fires)</td><td class="no">No</td><td>Dhan, Fyers, API</td></tr>
+    <tr><td>One Cancels Other</td><td class="nm">OCO</td><td>—</td><td class="yes">SLM ₹90</td><td class="yes">Limit ₹130</td><td class="no">SLM leg</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td>BO / SUPER / API</td></tr>
+    <tr><td>One Triggers Other</td><td class="nm">OTO</td><td>₹100</td><td class="yes">Auto on fill</td><td class="no">Manual</td><td class="partial">Depends on SL type</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td>Dhan, API</td></tr>
+    <tr class="cmp-cat-row"><td colspan="10">── COMBINATION / MULTI-LEG ──</td></tr>
+    <tr><td>Bracket Order</td><td class="nm">BO</td><td>₹100</td><td class="yes">₹90 auto</td><td class="yes">₹130 auto</td><td class="partial">SLM leg</td><td class="no">No (intraday)</td><td class="yes">Yes</td><td class="yes">Yes</td><td>Zerodha, Dhan, Fyers</td></tr>
+    <tr><td>Cover Order</td><td class="nm">CO</td><td>₹100</td><td class="yes">₹90 mandatory</td><td class="no">Manual</td><td class="partial">SLM leg</td><td class="no">No (intraday)</td><td class="partial">SL only</td><td class="yes">Yes (most)</td><td>Zerodha, Upstox</td></tr>
+    <tr><td>One Triggers OCO</td><td class="nm">OTOCO</td><td>₹100</td><td class="yes">₹90 auto</td><td class="yes">₹130 auto</td><td class="partial">SLM leg</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td>API / Dhan SUPER</td></tr>
+    <tr><td>SUPER Order (Dhan)</td><td class="nm">SUPER</td><td>₹100</td><td class="yes">₹90 + Trail ₹10</td><td class="yes">₹130</td><td class="partial">SLM leg</td><td class="partial">Server-stored</td><td class="yes">Yes</td><td class="no">No</td><td>Dhan only</td></tr>
+    <tr><td>Basket Order</td><td class="nm">BASKET</td><td>Multiple symbols</td><td class="no">Per symbol</td><td class="no">Per symbol</td><td class="partial">Per leg</td><td class="no">No</td><td class="no">No</td><td class="no">No</td><td>Zerodha, Dhan, Fyers</td></tr>
+    <tr class="cmp-cat-row"><td colspan="10">── ADVANCED / PLATFORM-SPECIFIC ──</td></tr>
+    <tr><td>Spread Order</td><td class="nm">SPREAD</td><td>Leg A ₹100</td><td class="no">Manual</td><td class="no">Manual</td><td class="partial">Partial</td><td class="no">No</td><td class="no">No</td><td class="yes">Yes</td><td>MCX, API</td></tr>
+    <tr><td>MTF Order</td><td class="nm">MTF</td><td>₹100 leveraged</td><td class="no">Manual (auto SQ on margin call)</td><td class="no">Manual</td><td class="partial">Partial</td><td class="yes">Yes (multi-day)</td><td class="partial">Margin call only</td><td class="no">No (higher leverage)</td><td>mStock, Kotak</td></tr>
+    <tr><td>Synthetic Bracket</td><td class="nm">SYN-BO</td><td>₹100</td><td class="yes">₹90 manual-placed</td><td class="yes">₹130 manual-placed</td><td class="partial">Depends on SL type</td><td class="no">No</td><td class="no">Manual cancel</td><td class="no">No</td><td>Any (manual)</td></tr>
+    <tr><td>Beyond-Target Trail</td><td class="nm">BTT</td><td>₹100</td><td class="yes">Trail after ₹130</td><td class="yes">Continue past ₹130</td><td class="partial">TSL fires</td><td class="no">No</td><td class="yes">Yes (algo)</td><td class="no">No</td><td>API only</td></tr>
+    <tr class="cmp-cat-row"><td colspan="10">── ALGO / INSTITUTIONAL ──</td></tr>
+    <tr><td>VWAP Order</td><td class="nm">VWAP</td><td>Sliced over session</td><td class="no">Per slice</td><td class="no">Per slice</td><td class="partial">Partial</td><td class="no">No</td><td class="partial">Per slice</td><td class="no">No</td><td>Inst. OMS / API</td></tr>
+    <tr><td>TWAP Order</td><td class="nm">TWAP</td><td>Equal time slices</td><td class="no">Per slice</td><td class="no">Per slice</td><td class="partial">Partial</td><td class="no">No</td><td class="partial">Per slice</td><td class="no">No</td><td>API</td></tr>
+    <tr><td>API Custom Algo</td><td class="nm">ALGO</td><td>Any logic</td><td class="yes">Any logic</td><td class="yes">Any logic</td><td class="yes">Full control</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td><td>Zerodha/Dhan/Fyers API</td></tr>
+  </tbody>
+</table>
+</div>
+
+<!-- ══ QUICK GUIDE ══ -->
+<div style="margin-bottom:20px">
+  <div class="sec-hdr">
+    <div class="sec-dot" style="background:var(--dI)"></div>
+    <div class="sec-title" style="color:var(--dI)">Quick Decision Guide</div>
+    <div class="sec-divider"></div>
+  </div>
+</div>
+<div class="qg-grid">
+  <div class="qg-card"><div class="q">I need guaranteed exit, no matter what price</div><div class="a">→ Stop-Loss Market (SLM)</div></div>
+  <div class="qg-card"><div class="q">I want exact entry price with patience</div><div class="a">→ Limit Order + GTT</div></div>
+  <div class="qg-card"><div class="q">I want to ride the trend and lock profit</div><div class="a">→ Trailing Stop Loss / SUPER Order</div></div>
+  <div class="qg-card"><div class="q">I want full automation (entry + SL + target)</div><div class="a">→ Bracket Order or SUPER Order</div></div>
+  <div class="qg-card"><div class="q">I want lowest possible margin</div><div class="a">→ Cover Order (then Bracket Order)</div></div>
+  <div class="qg-card"><div class="q">I want to enter weeks later at a specific price</div><div class="a">→ GTT (Good Till Triggered)</div></div>
+  <div class="qg-card"><div class="q">I want SL to auto-activate when entry fills</div><div class="a">→ OTO / SUPER Order / API Algo</div></div>
+  <div class="qg-card"><div class="q">I want to trail BEYOND my target (₹130+)</div><div class="a">→ API Algo / Beyond-Target Trail</div></div>
+  <div class="qg-card"><div class="q">I want price floor but accept no-fill risk</div><div class="a">→ Stop-Loss Limit (SL-L)</div></div>
+  <div class="qg-card"><div class="q">I want to buy multiple stocks simultaneously</div><div class="a">→ Basket Order</div></div>
+  <div class="qg-card"><div class="q">I'm placing order tonight for tomorrow</div><div class="a">→ After Market Order (AMO)</div></div>
+  <div class="qg-card"><div class="q">I'm an institution moving 500+ lots quietly</div><div class="a">→ VWAP / Iceberg / Disclosed Qty</div></div>
+</div>
+
+</div><!-- end .main -->
+
+<!-- ══ FOOTER ══ -->
+<div class="foot">
+  <div>Futures Trading Reference · India (NSE / BSE / MCX) · ₹100 Entry · SL ₹90 · Target ₹130 · Trail ₹10</div>
+  <span>30 order types · Educational use only · Not investment advice</span>
+</div>
+
+<script>
+// Filter functionality
+const filters = document.querySelectorAll('.ftag');
+const cards = document.querySelectorAll('.card');
+const sections = document.querySelectorAll('.section[data-section]');
+
+filters.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filters.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cat = btn.dataset.cat;
+    
+    if (cat === 'all') {
+      cards.forEach(c => c.classList.remove('hidden'));
+      sections.forEach(s => s.classList.remove('hidden'));
+    } else {
+      sections.forEach(s => {
+        const secCat = s.dataset.section;
+        const hasMatch = secCat === cat;
+        s.classList.toggle('hidden', !hasMatch);
+      });
+      cards.forEach(c => {
+        const match = c.dataset.cat === cat;
+        c.classList.toggle('hidden', !match);
+      });
+      // Show all sections that have visible cards
+      sections.forEach(s => {
+        const visCards = s.querySelectorAll('.card:not(.hidden)');
+        s.classList.toggle('hidden', visCards.length === 0);
+      });
+    }
+  });
+});
+</script>
+</body>
+</html>
