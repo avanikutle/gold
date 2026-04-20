@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Futures Trade Cost Calculator — Zerodha India</title>
+<style>
+:root {
+  --bg:#090d13; --panel:#0f1620; --panel2:#141d2e; --line:#243450;
+  --linebr:#2e4a70; --gold:#ffd040; --txt:#f5ead0; --dim:#a0bcd8;
+  --dD:#60d0ff; --dI:#f060e0; --sky:#55d8ff; --rose:#ff9090;
+  --lav:#d0a8ff; --teal:#40f8c8; --org:#ffaa50; --grn:#98f048;
+  --div:#1c3050; --lblclr:#c0d8f0; --noteclr:#90c0e8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans-serif;font-size:16px;min-height:100vh;}
+
+/* ── HEADER ─────────────────────────────────── */
+.header{background:linear-gradient(135deg,#0f1620,#1a2c4a);border-bottom:2px solid var(--linebr);padding:18px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+.header-left h1{font-size:1.35rem;color:var(--gold);letter-spacing:.4px;}
+.header-left p{font-size:.8rem;color:var(--dim);margin-top:3px;}
+.badge{background:var(--div);border:1px solid var(--linebr);color:var(--noteclr);font-size:.73rem;padding:5px 11px;border-radius:4px;white-space:nowrap;}
+
+/* ── TABS ────────────────────────────────────── */
+.tabs{display:flex;padding:16px 32px 0;gap:4px;background:var(--bg);border-bottom:2px solid var(--line);}
+.tab-btn{background:var(--panel2);border:2px solid transparent;color:var(--dim);padding:10px 22px;cursor:pointer;border-radius:6px 6px 0 0;font-size:.88rem;font-weight:500;transition:all .2s;border-bottom:none;}
+.tab-btn:hover{color:var(--txt);border-color:var(--linebr);background:var(--panel);}
+.tab-btn.active{background:var(--panel);color:var(--gold);border-color:var(--linebr);border-bottom:2px solid var(--panel);margin-bottom:-2px;}
+
+/* ── MAIN ────────────────────────────────────── */
+.main{padding:24px 32px;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+.grid{display:grid;grid-template-columns:360px 1fr;gap:20px;align-items:start;}
+
+/* ── CONTROLS ────────────────────────────────── */
+.ctrl-panel{background:var(--panel);border:2px solid var(--linebr);border-radius:10px;padding:20px;}
+.clabel{font-size:.73rem;color:var(--lblclr);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+.cgroup{margin-bottom:16px;}
+select,input[type="number"]{
+  width:100%;background:var(--panel2);border:2px solid var(--linebr);border-radius:6px;
+  color:var(--txt);font-size:.93rem;padding:10px 12px;-webkit-appearance:none;
+  transition:border-color .2s;
+}
+select:focus,input[type="number"]:focus{outline:none;border-color:var(--sky);}
+select option{background:var(--panel2);color:var(--txt);}
+.pinput{position:relative;}
+.pinput .sym{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--dim);pointer-events:none;}
+.pinput input{padding-left:26px;}
+.sub{font-size:.73rem;color:var(--dim);margin-top:4px;line-height:1.4;}
+.slider-row{display:flex;align-items:center;gap:10px;}
+input[type="range"]{flex:1;-webkit-appearance:none;height:5px;background:var(--div);border-radius:3px;outline:none;cursor:pointer;}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:var(--gold);border-radius:50%;cursor:pointer;box-shadow:0 0 6px rgba(255,208,64,.4);}
+.lotbadge{background:var(--div);color:var(--gold);border-radius:6px;padding:6px 14px;font-weight:700;font-size:1rem;min-width:46px;text-align:center;border:1px solid var(--linebr);}
+.cvbox{background:var(--div);border:1px solid var(--linebr);border-radius:8px;padding:13px 14px;margin-top:6px;}
+.cvrow{display:flex;justify-content:space-between;align-items:center;padding:3px 0;}
+.cvrow .cvlbl{color:var(--dim);font-size:.8rem;}
+.cvrow .cvval{color:var(--sky);font-weight:600;font-size:.88rem;}
+.cvrow.big .cvval{color:var(--teal);font-size:1rem;}
+
+/* ── RESULTS ─────────────────────────────────── */
+.res-panel{background:var(--panel);border:2px solid var(--linebr);border-radius:10px;padding:20px;}
+.sec-hdr{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.tag{background:var(--div);color:var(--gold);font-size:.78rem;padding:3px 10px;border-radius:4px;font-weight:700;border:1px solid var(--linebr);}
+.tag.exch{background:rgba(96,208,255,.1);color:var(--sky);border-color:rgba(96,208,255,.3);}
+.sec-sub{color:var(--dim);font-size:.8rem;}
+
+/* ── TABLE ───────────────────────────────────── */
+.ctable{width:100%;border-collapse:collapse;font-size:.85rem;}
+.ctable th{background:var(--panel2);color:var(--lblclr);font-size:.72rem;text-transform:uppercase;letter-spacing:.7px;padding:9px 12px;text-align:right;border-bottom:2px solid var(--linebr);}
+.ctable th:first-child{text-align:left;}
+.ctable td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle;}
+.ctable td:first-child{text-align:left;color:var(--lblclr);}
+.ctable tbody tr:hover td{background:rgba(255,208,64,.04);}
+.bv{color:var(--sky);}
+.sv{color:var(--rose);}
+.zv{color:var(--line);}
+.tr-tot td{background:var(--div) !important;border-top:2px solid var(--linebr);border-bottom:none !important;font-weight:700;font-size:.92rem;}
+.tr-tot td:first-child{color:var(--gold);}
+.dominant{background:rgba(255,144,144,.06);}
+
+/* ── SUMMARY CARDS ───────────────────────────── */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px;}
+.card{background:var(--panel2);border:2px solid var(--linebr);border-radius:8px;padding:13px;text-align:center;}
+.card .clbl{font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;}
+.card .cval{font-size:1.1rem;font-weight:700;}
+.card.total .cval{color:var(--gold);}
+.card.pct .cval{color:var(--org);}
+.card.be .cval{color:var(--teal);font-size:.95rem;}
+
+/* ── BAR ─────────────────────────────────────── */
+.barsec{margin-top:16px;}
+.barlbl{font-size:.72rem;color:var(--lblclr);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;}
+.sbar{height:26px;border-radius:6px;overflow:hidden;display:flex;}
+.barseg{height:100%;transition:width .35s ease;}
+.barleg{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px;}
+.legitem{display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--dim);}
+.legdot{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
+
+/* ── NOTE ────────────────────────────────────── */
+.note{font-size:.75rem;color:var(--noteclr);margin-top:16px;padding:10px 14px;background:rgba(255,208,64,.04);border-left:3px solid var(--gold);border-radius:0 5px 5px 0;line-height:1.6;}
+.note strong{color:var(--gold);}
+
+/* ── FOOTER ──────────────────────────────────── */
+footer{text-align:center;padding:20px 32px;color:var(--dim);font-size:.73rem;border-top:1px solid var(--line);margin-top:8px;line-height:1.6;}
+
+/* ── RESPONSIVE ──────────────────────────────── */
+@media(max-width:920px){
+  .grid{grid-template-columns:1fr;}
+  .cards{grid-template-columns:1fr 1fr;}
+  .main{padding:16px;}
+  .header{padding:14px 16px;}
+  .tabs{padding:12px 16px 0;overflow-x:auto;}
+}
+@media(max-width:480px){
+  .tab-btn{padding:8px 12px;font-size:.8rem;}
+  .cards{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>⚡ Futures Trade Cost Calculator</h1>
+    <p>Zerodha India · MCX Commodities + NSE/BSE F&amp;O · All charges verified</p>
+  </div>
+  <div class="badge">Rates: Post Oct 2024 · STT revised Apr 1, 2026</div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('mcx',this)">🪙 MCX Commodities</button>
+  <button class="tab-btn" onclick="switchTab('idx',this)">📊 Index Futures</button>
+  <button class="tab-btn" onclick="switchTab('eq',this)">🏢 Equity Futures</button>
+</div>
+
+<div class="main">
+
+<!-- ══════════════ MCX TAB ══════════════ -->
+<div id="tab-mcx" class="tab-content active">
+  <div class="grid">
+    <div class="ctrl-panel">
+      <div class="cgroup">
+        <div class="clabel">Instrument</div>
+        <select id="mcx-sel" onchange="mcxOnChange()">
+          <option value="0">Gold (1 kg) — GOLD</option>
+          <option value="1" selected>Gold Mini (100g) — GOLDM</option>
+          <option value="2">Silver (30 kg) — SILVER</option>
+          <option value="3">Silver Mini (5 kg) — SILVERM</option>
+          <option value="4">Crude Oil (100 bbl) — CRUDEOIL</option>
+          <option value="5">Natural Gas (1250 MMBtu) — NATURALGAS</option>
+          <option value="6">Copper (2500 kg) — COPPER</option>
+          <option value="7">Zinc (3000 kg) — ZINC</option>
+          <option value="8">Aluminium (5000 kg) — ALUMINIUM</option>
+        </select>
+      </div>
+      <div class="cgroup">
+        <div class="clabel">Price <span id="mcx-punit" style="color:var(--org);text-transform:none;font-size:.75rem">(₹/10g)</span></div>
+        <div class="pinput">
+          <span class="sym">₹</span>
+          <input type="number" id="mcx-price" value="93000" min="1" oninput="calcMCX()">
+        </div>
+        <div class="sub" id="mcx-lotnote">Lot: 10 units × 10g = 100g per lot</div>
+      </div>
+      <div class="cgroup">
+        <div class="clabel">Number of Lots</div>
+        <div class="slider-row">
+          <input type="range" id="mcx-lots" min="1" max="50" value="1" oninput="mcxLots()">
+          <div class="lotbadge" id="mcx-lotd">1</div>
+        </div>
+      </div>
+      <div class="cvbox">
+        <div class="cvrow"><span class="cvlbl">Value per lot</span><span class="cvval" id="mcx-cvpl">—</span></div>
+        <div class="cvrow big"><span class="cvlbl" style="font-weight:600">Total Contract Value</span><span class="cvval" id="mcx-cvt">—</span></div>
+      </div>
+    </div>
+
+    <div class="res-panel">
+      <div class="sec-hdr">
+        <span class="tag" id="mcx-sym">GOLDM</span>
+        <span class="tag exch">MCX</span>
+        <span class="sec-sub">Zerodha Charge Breakdown · Non-Agri CTT applies</span>
+      </div>
+      <table class="ctable">
+        <thead><tr><th>Charge</th><th>BUY ₹</th><th>SELL ₹</th><th>Round Trip ₹</th></tr></thead>
+        <tbody id="mcx-tbody"></tbody>
+      </table>
+      <div class="cards">
+        <div class="card total"><div class="clbl">Total Round Trip</div><div class="cval" id="mcx-rt">—</div></div>
+        <div class="card pct"><div class="clbl">% of Contract Value</div><div class="cval" id="mcx-pct">—</div></div>
+        <div class="card be"><div class="clbl">Breakeven Move</div><div class="cval" id="mcx-be">—</div></div>
+      </div>
+      <div class="barsec">
+        <div class="barlbl">Cost Composition (Round Trip)</div>
+        <div class="sbar" id="mcx-bar"></div>
+        <div class="barleg" id="mcx-leg"></div>
+      </div>
+    </div>
+  </div>
+  <div class="note">
+    <strong>MCX Non-Agri:</strong> CTT 0.01% on sell side · Exchange 0.0021% (both sides) · SEBI ₹10/crore (both sides) · Stamp duty 0.002% on buy side only · GST 18% on (Brokerage + Exchange + SEBI) · Brokerage ₹20 flat per executed order (Zerodha). No CTT on agricultural commodities. Prices/lot sizes are indicative — verify with MCX/Zerodha before trading.
+  </div>
+</div>
+
+<!-- ══════════════ INDEX TAB ══════════════ -->
+<div id="tab-idx" class="tab-content">
+  <div class="grid">
+    <div class="ctrl-panel">
+      <div class="cgroup">
+        <div class="clabel">Index</div>
+        <select id="idx-sel" onchange="idxOnChange()">
+          <option value="0" selected>Nifty 50 — NSE (75 units)</option>
+          <option value="1">Bank Nifty — NSE (30 units)</option>
+          <option value="2">Fin Nifty — NSE (65 units)</option>
+          <option value="3">Midcap Nifty — NSE (120 units)</option>
+          <option value="4">Sensex — BSE (20 units)</option>
+          <option value="5">Bankex — BSE (15 units)</option>
+        </select>
+      </div>
+      <div class="cgroup">
+        <div class="clabel">Current Index Level <span style="color:var(--org);font-size:.75rem;text-transform:none">(₹/unit)</span></div>
+        <div class="pinput">
+          <span class="sym">₹</span>
+          <input type="number" id="idx-price" value="23500" min="1" oninput="calcIDX()">
+        </div>
+        <div class="sub" id="idx-lotnote">Lot: 75 units per lot</div>
+      </div>
+      <div class="cgroup">
+        <div class="clabel">Number of Lots</div>
+        <div class="slider-row">
+          <input type="range" id="idx-lots" min="1" max="50" value="1" oninput="idxLots()">
+          <div class="lotbadge" id="idx-lotd">1</div>
+        </div>
+      </div>
+      <div class="cvbox">
+        <div class="cvrow"><span class="cvlbl">Value per lot</span><span class="cvval" id="idx-cvpl">—</span></div>
+        <div class="cvrow big"><span class="cvlbl" style="font-weight:600">Total Contract Value</span><span class="cvval" id="idx-cvt">—</span></div>
+      </div>
+    </div>
+
+    <div class="res-panel">
+      <div class="sec-hdr">
+        <span class="tag" id="idx-sym">NIFTY</span>
+        <span class="tag exch" id="idx-exchtag">NSE</span>
+        <span class="sec-sub">Zerodha Charge Breakdown · STT 0.05% sell (Apr 2026)</span>
+      </div>
+      <table class="ctable">
+        <thead><tr><th>Charge</th><th>BUY ₹</th><th>SELL ₹</th><th>Round Trip ₹</th></tr></thead>
+        <tbody id="idx-tbody"></tbody>
+      </table>
+      <div class="cards">
+        <div class="card total"><div class="clbl">Total Round Trip</div><div class="cval" id="idx-rt">—</div></div>
+        <div class="card pct"><div class="clbl">% of Contract Value</div><div class="cval" id="idx-pct">—</div></div>
+        <div class="card be"><div class="clbl">Breakeven (Points)</div><div class="cval" id="idx-be">—</div></div>
+      </div>
+      <div class="barsec">
+        <div class="barlbl">Cost Composition (Round Trip)</div>
+        <div class="sbar" id="idx-bar"></div>
+        <div class="barleg" id="idx-leg"></div>
+      </div>
+    </div>
+  </div>
+  <div class="note">
+    <strong>NSE/BSE Index Futures:</strong> STT 0.05% on sell side only — revised Apr 1, 2026 per Budget 2026-27 (was 0.02%) · NSE Exchange 0.00183% · BSE Exchange 0% · SEBI ₹10/crore · Stamp 0.002% buy only · GST 18% on (Brokerage + Exchange + SEBI) · Brokerage ₹20 flat. Lot sizes indicative — NSE revises periodically to target ~₹15L contract value. Verify before trading.
+  </div>
+</div>
+
+<!-- ══════════════ EQUITY TAB ══════════════ -->
+<div id="tab-eq" class="tab-content">
+  <div class="grid">
+    <div class="ctrl-panel">
+      <div class="cgroup">
+        <div class="clabel">Stock</div>
+        <select id="eq-sel" onchange="eqOnChange()">
+          <option value="0" selected>Reliance Industries — RELIANCE</option>
+          <option value="1">TCS — TCS</option>
+          <option value="2">HDFC Bank — HDFCBANK</option>
+          <option value="3">Infosys — INFY</option>
+          <option value="4">ICICI Bank — ICICIBANK</option>
+          <option value="5">Wipro — WIPRO</option>
+          <option value="6">Larsen &amp; Toubro — LT</option>
+          <option value="7">Bajaj Finance — BAJFINANCE</option>
+          <option value="8">Axis Bank — AXISBANK</option>
+          <option value="9">Kotak Mahindra Bank — KOTAKBANK</option>
+        </select>
+      </div>
+      <div class="cgroup">
+        <div class="clabel">Current Price <span style="color:var(--org);font-size:.75rem;text-transform:none">(₹/share)</span></div>
+        <div class="pinput">
+          <span class="sym">₹</span>
+          <input type="number" id="eq-price" value="1250" min="1" oninput="calcEQ()">
+        </div>
+        <div class="sub" id="eq-lotnote">Lot: 1000 shares per lot (approx)</div>
+      </div>
+      <div class="cgroup">
+        <div class="clabel">Number of Lots</div>
+        <div class="slider-row">
+          <input type="range" id="eq-lots" min="1" max="50" value="1" oninput="eqLots()">
+          <div class="lotbadge" id="eq-lotd">1</div>
+        </div>
+      </div>
+      <div class="cvbox">
+        <div class="cvrow"><span class="cvlbl">Value per lot</span><span class="cvval" id="eq-cvpl">—</span></div>
+        <div class="cvrow big"><span class="cvlbl" style="font-weight:600">Total Contract Value</span><span class="cvval" id="eq-cvt">—</span></div>
+      </div>
+    </div>
+
+    <div class="res-panel">
+      <div class="sec-hdr">
+        <span class="tag" id="eq-sym">RELIANCE</span>
+        <span class="tag exch">NSE</span>
+        <span class="sec-sub">Zerodha Charge Breakdown · STT 0.05% sell (Apr 2026)</span>
+      </div>
+      <table class="ctable">
+        <thead><tr><th>Charge</th><th>BUY ₹</th><th>SELL ₹</th><th>Round Trip ₹</th></tr></thead>
+        <tbody id="eq-tbody"></tbody>
+      </table>
+      <div class="cards">
+        <div class="card total"><div class="clbl">Total Round Trip</div><div class="cval" id="eq-rt">—</div></div>
+        <div class="card pct"><div class="clbl">% of Contract Value</div><div class="cval" id="eq-pct">—</div></div>
+        <div class="card be"><div class="clbl">Breakeven (₹/share)</div><div class="cval" id="eq-be">—</div></div>
+      </div>
+      <div class="barsec">
+        <div class="barlbl">Cost Composition (Round Trip)</div>
+        <div class="sbar" id="eq-bar"></div>
+        <div class="barleg" id="eq-leg"></div>
+      </div>
+    </div>
+  </div>
+  <div class="note">
+    <strong>NSE Equity Futures:</strong> STT 0.05% on sell side only — revised Apr 1, 2026 (was 0.02%) · Exchange NSE 0.00183% · SEBI ₹10/crore · Stamp 0.002% buy only · GST 18% on (Brokerage + Exchange + SEBI) · Brokerage ₹20 flat. <strong>Lot sizes are approximate</strong> — NSE targets ~₹15L contract value and revises lots periodically. Verify current lot sizes at nseindia.com or Zerodha before trading.
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<footer>
+  Charge rates sourced from <strong>zerodha.com/charges</strong> · Last verified April 2026 · 
+  STT revised per Budget 2026-27 (effective Apr 1, 2026) · MCX exchange charges revised Oct 2024 · 
+  This calculator is for estimation only — actual charges may differ marginally due to rounding.
+</footer>
+
+<script>
+/* ════════════════════════════════════════════
+   DATA
+════════════════════════════════════════════ */
+const MCX = [
+  {name:'Gold (1 kg)',     sym:'GOLD',       lot:100,  dp:93000, pu:'₹/10g',    ln:'Lot: 100 units × 10g = 1 kg'},
+  {name:'Gold Mini (100g)',sym:'GOLDM',      lot:10,   dp:93000, pu:'₹/10g',    ln:'Lot: 10 units × 10g = 100g'},
+  {name:'Silver (30 kg)', sym:'SILVER',     lot:30,   dp:97000, pu:'₹/kg',     ln:'Lot: 30 kg'},
+  {name:'Silver Mini (5 kg)',sym:'SILVERM', lot:5,    dp:97000, pu:'₹/kg',     ln:'Lot: 5 kg'},
+  {name:'Crude Oil',      sym:'CRUDEOIL',   lot:100,  dp:5600,  pu:'₹/barrel', ln:'Lot: 100 barrels'},
+  {name:'Natural Gas',    sym:'NATURALGAS', lot:1250, dp:300,   pu:'₹/MMBtu',  ln:'Lot: 1250 MMBtu'},
+  {name:'Copper',         sym:'COPPER',     lot:2500, dp:870,   pu:'₹/kg',     ln:'Lot: 2500 kg'},
+  {name:'Zinc',           sym:'ZINC',       lot:3000, dp:235,   pu:'₹/kg',     ln:'Lot: 3000 kg'},
+  {name:'Aluminium',      sym:'ALUMINIUM',  lot:5000, dp:225,   pu:'₹/kg',     ln:'Lot: 5000 kg'},
+];
+
+const IDX = [
+  {name:'Nifty 50',     sym:'NIFTY',      lot:75,  dp:23500, exch:'NSE', ln:'Lot: 75 units'},
+  {name:'Bank Nifty',   sym:'BANKNIFTY',  lot:30,  dp:51000, exch:'NSE', ln:'Lot: 30 units'},
+  {name:'Fin Nifty',    sym:'FINNIFTY',   lot:65,  dp:23500, exch:'NSE', ln:'Lot: 65 units'},
+  {name:'Midcap Nifty', sym:'MIDCPNIFTY', lot:120, dp:12500, exch:'NSE', ln:'Lot: 120 units'},
+  {name:'Sensex',       sym:'SENSEX',     lot:20,  dp:77000, exch:'BSE', ln:'Lot: 20 units'},
+  {name:'Bankex',       sym:'BANKEX',     lot:15,  dp:54000, exch:'BSE', ln:'Lot: 15 units'},
+];
+
+const EQ = [
+  {name:'Reliance Industries', sym:'RELIANCE',   lot:1000, dp:1250, ln:'Lot: ~1000 shares (indicative)'},
+  {name:'TCS',                 sym:'TCS',         lot:500,  dp:3500, ln:'Lot: ~500 shares (indicative)'},
+  {name:'HDFC Bank',           sym:'HDFCBANK',    lot:800,  dp:1750, ln:'Lot: ~800 shares (indicative)'},
+  {name:'Infosys',             sym:'INFY',        lot:1200, dp:1450, ln:'Lot: ~1200 shares (indicative)'},
+  {name:'ICICI Bank',          sym:'ICICIBANK',   lot:1375, dp:1200, ln:'Lot: ~1375 shares (indicative)'},
+  {name:'Wipro',               sym:'WIPRO',       lot:3200, dp:250,  ln:'Lot: ~3200 shares (indicative)'},
+  {name:'L&T',                 sym:'LT',          lot:450,  dp:3400, ln:'Lot: ~450 shares (indicative)'},
+  {name:'Bajaj Finance',       sym:'BAJFINANCE',  lot:200,  dp:7200, ln:'Lot: ~200 shares (indicative)'},
+  {name:'Axis Bank',           sym:'AXISBANK',    lot:1250, dp:1100, ln:'Lot: ~1250 shares (indicative)'},
+  {name:'Kotak Mahindra Bank', sym:'KOTAKBANK',   lot:800,  dp:1850, ln:'Lot: ~800 shares (indicative)'},
+];
+
+/* ════════════════════════════════════════════
+   CHARGE COLORS & NAMES
+════════════════════════════════════════════ */
+const COLORS = {
+  brok:  'var(--dim)',
+  tax:   'var(--rose)',
+  exch:  'var(--sky)',
+  sebi:  'var(--lav)',
+  stamp: 'var(--org)',
+  gst:   'var(--teal)',
+};
+
+/* ════════════════════════════════════════════
+   CALCULATIONS
+════════════════════════════════════════════ */
+// MCX Non-Agri Futures
+function calcMCXCharges(cv) {
+  const brok     = Math.min(20, cv * 0.0003);
+  const exchR    = 0.0021 / 100;          // 0.0021%
+  const sebiR    = 10 / 10000000;         // ₹10/crore
+  const stampR   = 0.002 / 100;           // 0.002% buy only
+  const cttR     = 0.01 / 100;            // 0.01% sell only (non-agri)
+
+  const buyExch  = cv * exchR;
+  const buySebi  = cv * sebiR;
+  const buyStamp = cv * stampR;
+  const buyGst   = (brok + buyExch + buySebi) * 0.18;
+  const buyTot   = brok + buyExch + buySebi + buyStamp + buyGst;
+
+  const selExch  = cv * exchR;
+  const selSebi  = cv * sebiR;
+  const selCtt   = cv * cttR;
+  const selGst   = (brok + selExch + selSebi) * 0.18;
+  const selTot   = brok + selExch + selSebi + selCtt + selGst;
+
+  return {
+    rows:[
+      {lbl:'Brokerage (₹20 flat)',   buy:brok,    sell:brok,   col:COLORS.brok},
+      {lbl:'CTT — 0.01% (sell)',      buy:0,       sell:selCtt, col:COLORS.tax, dom:true},
+      {lbl:'Exchange — MCX 0.0021%', buy:buyExch, sell:selExch,col:COLORS.exch},
+      {lbl:'SEBI — ₹10/crore',        buy:buySebi, sell:selSebi,col:COLORS.sebi},
+      {lbl:'Stamp Duty — 0.002% (buy)',buy:buyStamp,sell:0,    col:COLORS.stamp},
+      {lbl:'GST — 18%',               buy:buyGst,  sell:selGst, col:COLORS.gst},
+    ],
+    buyTot, selTot, rt: buyTot + selTot,
+  };
+}
+
+// NSE / BSE F&O Futures (Index + Equity — same formula)
+function calcNSECharges(cv, exch) {
+  const brok     = Math.min(20, cv * 0.0003);
+  const exchR    = exch === 'BSE' ? 0 : 0.00183 / 100;  // NSE 0.00183%, BSE 0%
+  const sebiR    = 10 / 10000000;
+  const stampR   = 0.002 / 100;
+  const sttR     = 0.05 / 100;   // 0.05% sell only — revised Apr 1 2026
+
+  const buyExch  = cv * exchR;
+  const buySebi  = cv * sebiR;
+  const buyStamp = cv * stampR;
+  const buyGst   = (brok + buyExch + buySebi) * 0.18;
+  const buyTot   = brok + buyExch + buySebi + buyStamp + buyGst;
+
+  const selExch  = cv * exchR;
+  const selSebi  = cv * sebiR;
+  const selStt   = cv * sttR;
+  const selGst   = (brok + selExch + selSebi) * 0.18;
+  const selTot   = brok + selExch + selSebi + selStt + selGst;
+
+  const exchLabel = exch === 'BSE' ? `Exchange — BSE 0%` : `Exchange — NSE 0.00183%`;
+
+  return {
+    rows:[
+      {lbl:'Brokerage (₹20 flat)',           buy:brok,    sell:brok,   col:COLORS.brok},
+      {lbl:'STT — 0.05% (sell)',              buy:0,       sell:selStt, col:COLORS.tax, dom:true},
+      {lbl:exchLabel,                         buy:buyExch, sell:selExch,col:COLORS.exch},
+      {lbl:'SEBI — ₹10/crore',               buy:buySebi, sell:selSebi,col:COLORS.sebi},
+      {lbl:'Stamp Duty — 0.002% (buy)',       buy:buyStamp,sell:0,      col:COLORS.stamp},
+      {lbl:'GST — 18%',                       buy:buyGst,  sell:selGst, col:COLORS.gst},
+    ],
+    buyTot, selTot, rt: buyTot + selTot,
+  };
+}
+
+/* ════════════════════════════════════════════
+   FORMATTING
+════════════════════════════════════════════ */
+function fmtNum(n, decimals=2) {
+  if (isNaN(n) || n === null) return '—';
+  const neg = n < 0;
+  const abs = Math.abs(n).toFixed(decimals);
+  const [int, dec] = abs.split('.');
+  let r = '';
+  const a = int.split('').reverse();
+  for (let i = 0; i < a.length; i++) {
+    if (i === 3 || (i > 3 && (i - 3) % 2 === 0)) r = ',' + r;
+    r = a[i] + r;
+  }
+  return (neg ? '-' : '') + r + (dec !== undefined ? '.' + dec : '');
+}
+const rs  = n => '₹' + fmtNum(n);
+const rs0 = n => '₹' + fmtNum(n, 0);
+
+/* ════════════════════════════════════════════
+   RENDER TABLE
+════════════════════════════════════════════ */
+function renderTbl(tbodyId, d) {
+  const tb = document.getElementById(tbodyId);
+  let h = '';
+  for (const r of d.rows) {
+    const bStr = r.buy < 0.005 ? `<span class="zv">—</span>` : `<span class="bv">${fmtNum(r.buy)}</span>`;
+    const sStr = r.sell < 0.005 ? `<span class="zv">—</span>` : `<span class="sv">${fmtNum(r.sell)}</span>`;
+    const rt   = r.buy + r.sell;
+    const rStr = rt < 0.005 ? `<span class="zv">—</span>` : fmtNum(rt);
+    h += `<tr class="${r.dom?'dominant':''}"><td>${r.lbl}</td><td>${bStr}</td><td>${sStr}</td><td>${rStr}</td></tr>`;
+  }
+  h += `<tr class="tr-tot">
+    <td>TOTAL</td>
+    <td><span class="bv">${fmtNum(d.buyTot)}</span></td>
+    <td><span class="sv">${fmtNum(d.selTot)}</span></td>
+    <td style="color:var(--gold)">${fmtNum(d.rt)}</td>
+  </tr>`;
+  tb.innerHTML = h;
+}
+
+/* ════════════════════════════════════════════
+   RENDER BAR + LEGEND
+════════════════════════════════════════════ */
+function renderBar(barId, legId, d) {
+  const total = d.rt;
+  if (total < 0.01) return;
+  const segs = d.rows.map(r => ({
+    lbl: r.lbl.split('—')[0].trim(),
+    val: r.buy + r.sell,
+    col: r.col,
+  })).filter(s => s.val > 0.005);
+
+  document.getElementById(barId).innerHTML =
+    segs.map(s => `<div class="barseg" style="width:${(s.val/total*100).toFixed(2)}%;background:${s.col}"></div>`).join('');
+
+  document.getElementById(legId).innerHTML =
+    segs.map(s => `<div class="legitem">
+      <div class="legdot" style="background:${s.col}"></div>
+      ${s.lbl}: ${rs(s.val)} (${(s.val/total*100).toFixed(1)}%)
+    </div>`).join('');
+}
+
+/* ════════════════════════════════════════════
+   MCX
+════════════════════════════════════════════ */
+function calcMCX() {
+  const i    = parseInt(document.getElementById('mcx-sel').value);
+  const inst = MCX[i];
+  const p    = parseFloat(document.getElementById('mcx-price').value) || inst.dp;
+  const lots = parseInt(document.getElementById('mcx-lots').value);
+  const cvpl = p * inst.lot;
+  const cv   = cvpl * lots;
+
+  document.getElementById('mcx-cvpl').textContent = rs(cvpl);
+  document.getElementById('mcx-cvt').textContent  = rs(cv);
+
+  const d = calcMCXCharges(cv);
+  renderTbl('mcx-tbody', d);
+  renderBar('mcx-bar','mcx-leg', d);
+
+  document.getElementById('mcx-rt').textContent  = rs(d.rt);
+  document.getElementById('mcx-pct').textContent = (d.rt/cv*100).toFixed(4) + '%';
+  // breakeven = how many ₹ the price (per unit) must move to cover costs
+  const be = d.rt / (inst.lot * lots);
+  document.getElementById('mcx-be').textContent  = rs(be) + ' / ' + inst.pu.replace('₹/','');
+}
+function mcxOnChange() {
+  const inst = MCX[parseInt(document.getElementById('mcx-sel').value)];
+  document.getElementById('mcx-price').value = inst.dp;
+  document.getElementById('mcx-punit').textContent = '(' + inst.pu + ')';
+  document.getElementById('mcx-lotnote').textContent = inst.ln;
+  document.getElementById('mcx-sym').textContent = inst.sym;
+  calcMCX();
+}
+function mcxLots() {
+  const v = document.getElementById('mcx-lots').value;
+  document.getElementById('mcx-lotd').textContent = v;
+  calcMCX();
+}
+
+/* ════════════════════════════════════════════
+   INDEX
+════════════════════════════════════════════ */
+function calcIDX() {
+  const i    = parseInt(document.getElementById('idx-sel').value);
+  const inst = IDX[i];
+  const p    = parseFloat(document.getElementById('idx-price').value) || inst.dp;
+  const lots = parseInt(document.getElementById('idx-lots').value);
+  const cvpl = p * inst.lot;
+  const cv   = cvpl * lots;
+
+  document.getElementById('idx-cvpl').textContent = rs(cvpl);
+  document.getElementById('idx-cvt').textContent  = rs(cv);
+
+  const d = calcNSECharges(cv, inst.exch);
+  renderTbl('idx-tbody', d);
+  renderBar('idx-bar','idx-leg', d);
+
+  document.getElementById('idx-rt').textContent  = rs(d.rt);
+  document.getElementById('idx-pct').textContent = (d.rt/cv*100).toFixed(4) + '%';
+  const be = d.rt / (inst.lot * lots);
+  document.getElementById('idx-be').textContent  = fmtNum(be, 2) + ' pts/lot';
+}
+function idxOnChange() {
+  const inst = IDX[parseInt(document.getElementById('idx-sel').value)];
+  document.getElementById('idx-price').value = inst.dp;
+  document.getElementById('idx-lotnote').textContent = inst.ln;
+  document.getElementById('idx-sym').textContent = inst.sym;
+  document.getElementById('idx-exchtag').textContent = inst.exch;
+  calcIDX();
+}
+function idxLots() {
+  const v = document.getElementById('idx-lots').value;
+  document.getElementById('idx-lotd').textContent = v;
+  calcIDX();
+}
+
+/* ════════════════════════════════════════════
+   EQUITY
+════════════════════════════════════════════ */
+function calcEQ() {
+  const i    = parseInt(document.getElementById('eq-sel').value);
+  const inst = EQ[i];
+  const p    = parseFloat(document.getElementById('eq-price').value) || inst.dp;
+  const lots = parseInt(document.getElementById('eq-lots').value);
+  const cvpl = p * inst.lot;
+  const cv   = cvpl * lots;
+
+  document.getElementById('eq-cvpl').textContent = rs(cvpl);
+  document.getElementById('eq-cvt').textContent  = rs(cv);
+
+  const d = calcNSECharges(cv, 'NSE');
+  renderTbl('eq-tbody', d);
+  renderBar('eq-bar','eq-leg', d);
+
+  document.getElementById('eq-rt').textContent  = rs(d.rt);
+  document.getElementById('eq-pct').textContent = (d.rt/cv*100).toFixed(4) + '%';
+  const be = d.rt / (inst.lot * lots);
+  document.getElementById('eq-be').textContent  = rs(be) + '/share';
+}
+function eqOnChange() {
+  const inst = EQ[parseInt(document.getElementById('eq-sel').value)];
+  document.getElementById('eq-price').value = inst.dp;
+  document.getElementById('eq-lotnote').textContent = inst.ln;
+  document.getElementById('eq-sym').textContent = inst.sym;
+  calcEQ();
+}
+function eqLots() {
+  const v = document.getElementById('eq-lots').value;
+  document.getElementById('eq-lotd').textContent = v;
+  calcEQ();
+}
+
+/* ════════════════════════════════════════════
+   TAB SWITCH
+════════════════════════════════════════════ */
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════ */
+calcMCX();
+calcIDX();
+calcEQ();
+</script>
+</body>
+</html>
